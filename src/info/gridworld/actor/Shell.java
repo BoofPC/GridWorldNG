@@ -1,23 +1,48 @@
 package info.gridworld.actor;
 
-import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
 
 import info.gridworld.actor.Actions.ColorAction;
 import info.gridworld.actor.Actions.MoveAction;
 import info.gridworld.actor.Actions.TurnAction;
 import info.gridworld.actor.ActorEvent.ActorInfo;
-import info.gridworld.grid.Location;
+import info.gridworld.actor.ShellWorld.Watchman;
 
 public class Shell extends Actor {
+  public enum Tags {
+    PUSHABLE("Shell.Pushable");
+    private final String str;
+
+    private Tags(final String str) {
+      this.str = str;
+    }
+
+    public String get() {
+      return str;
+    }
+  }
+
   private final int id;
   private final ActorListener brain;
+  private final Watchman watchman;
   private Iterable<Action> nextActions;
+  private final Map<Class<? extends Action>, BiConsumer<Shell, Action>> actionImpls =
+    new HashMap<>();
+  private final Set<String> tags = new HashSet<>();
 
-  public Shell(int id, ActorListener brain) {
+  public Shell(int id, ActorListener brain, Watchman watchman) {
     this.id = id;
     this.brain = brain;
+    this.watchman = watchman;
+    actionImpls.put(MoveAction.class, MoveAction.impl(1));
+    actionImpls.put(TurnAction.class, TurnAction.impl());
+    actionImpls.put(ColorAction.class, ColorAction.impl());
   }
 
   public void respond(ActorEvent event) {
@@ -33,26 +58,23 @@ public class Shell extends Actor {
       return;
     }
     for (final Action a : nextActions) {
-      if (a instanceof MoveAction) {
-        final int distance = ((MoveAction) a).getDistance();
-        final int direction = this.getDirection();
-        Location destination = this.getLocation();
-        for (int i = distance; i > 0; i--) {
-          destination.getAdjacentLocation(direction);
-        }
-        this.moveTo(destination);
-      } else if (a instanceof TurnAction) {
-        final int angle = ((TurnAction) a).getAngle();
-        final int direction = this.getDirection();
-        this.setDirection((direction + angle * 45) % 360);
-      } else if (a instanceof ColorAction) {
-        final Color color = ((ColorAction) a).getColor();
-        this.setColor(color);
+      final Class<? extends Action> clazz = a.getClass();
+      final BiConsumer<Shell, Action> impl = this.actionImpls.get(clazz);
+      if (impl != null) {
+        impl.accept(this, a);
       }
       if (a.isFinal()) {
         break;
       }
     }
     this.nextActions = null;
+  }
+
+  public Set<String> getTags() {
+    return tags;
+  }
+
+  public Watchman getWatchman() {
+    return watchman;
   }
 }
