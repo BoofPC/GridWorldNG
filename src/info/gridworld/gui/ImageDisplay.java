@@ -35,8 +35,7 @@ public class ImageDisplay extends AbstractDisplay {
   private final Class cl;
   private final String imageFilename;
   private static final String imageExtension = ".gif";
-  private final Map<String, Image> tintedVersions =
-    new HashMap<String, Image>();
+  private final Map<String, Image> tintedVersions = new HashMap<String, Image>();
 
   /**
    * Constructs an object that knows how to display an image. Looks for the named file first in the
@@ -47,8 +46,7 @@ public class ImageDisplay extends AbstractDisplay {
   public ImageDisplay(final Class cl) throws IOException {
     this.cl = cl;
     this.imageFilename = cl.getName().replace('.', '/');
-    final URL url = cl.getClassLoader()
-      .getResource(this.imageFilename + ImageDisplay.imageExtension);
+    final URL url = cl.getClassLoader().getResource(this.imageFilename + ImageDisplay.imageExtension);
     if (url == null) {
       throw new FileNotFoundException(
         this.imageFilename + ImageDisplay.imageExtension + " not found.");
@@ -65,16 +63,14 @@ public class ImageDisplay extends AbstractDisplay {
    * @param g2 drawing surface
    */
   @Override
-  public void draw(final Object obj, final Component comp,
-    final Graphics2D g2) {
+  public void draw(final Object obj, final Component comp, final Graphics2D g2) {
     Color color;
     if (obj == null) {
       color = null;
     } else {
       color = (Color) AbstractDisplay.getProperty(obj, "color");
     }
-    String imageSuffix =
-      (String) AbstractDisplay.getProperty(obj, "imageSuffix");
+    String imageSuffix = (String) AbstractDisplay.getProperty(obj, "imageSuffix");
     if (imageSuffix == null) {
       imageSuffix = "";
     }
@@ -86,11 +82,11 @@ public class ImageDisplay extends AbstractDisplay {
       if (untinted == null) // not cached, need to fetch
       {
         try {
-          final URL url = this.cl.getClassLoader().getResource(
-            this.imageFilename + imageSuffix + ImageDisplay.imageExtension);
+          final URL url = this.cl.getClassLoader()
+            .getResource(this.imageFilename + imageSuffix + ImageDisplay.imageExtension);
           if (url == null) {
-            throw new FileNotFoundException(this.imageFilename + imageSuffix
-              + ImageDisplay.imageExtension + " not found.");
+            throw new FileNotFoundException(
+              this.imageFilename + imageSuffix + ImageDisplay.imageExtension + " not found.");
           }
           untinted = ImageIO.read(url);
           this.tintedVersions.put(imageSuffix, untinted);

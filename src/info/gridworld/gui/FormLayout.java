@@ -59,8 +59,8 @@ public class FormLayout implements LayoutManager {
       final int height = Math.max(dleft.height, dright.height);
       cleft.setBounds(xcenter - dleft.width, y + (height - dleft.height) / 2,
         dleft.width, dleft.height);
-      cright.setBounds(xcenter + FormLayout.GAP,
-        y + (height - dright.height) / 2, dright.width, dright.height);
+      cright.setBounds(xcenter + FormLayout.GAP, y + (height - dright.height) / 2,
+        dright.width, dright.height);
       y += height;
     }
   }

@@ -47,6 +47,10 @@ import info.gridworld.grid.Location;
  */
 public class GridPanel extends JPanel
   implements Scrollable, PseudoInfiniteViewport.Pannable {
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
   private static final int MIN_CELL_SIZE = 12;
   private static final int DEFAULT_CELL_SIZE = 48;
   private static final int DEFAULT_CELL_COUNT = 10;
@@ -105,10 +109,8 @@ public class GridPanel extends JPanel
    * @param ytop the topmost pixel of the rectangle
    * @param obj the Locatable object to draw
    */
-  private void drawOccupant(final Graphics2D g2, final int xleft,
-    final int ytop, final Object obj) {
-    final Rectangle cellToDraw =
-      new Rectangle(xleft, ytop, this.cellSize, this.cellSize);
+  private void drawOccupant(final Graphics2D g2, final int xleft, final int ytop, final Object obj) {
+    final Rectangle cellToDraw = new Rectangle(xleft, ytop, this.cellSize, this.cellSize);
     // Only draw if the object is visible within the current clipping
     // region.
     if (cellToDraw.intersects(g2.getClip().getBounds())) {
@@ -131,10 +133,9 @@ public class GridPanel extends JPanel
     final Rectangle curClip = g2.getClip().getBounds();
     final int top = this.getInsets().top, left = this.getInsets().left;
     final int miny =
-      Math.max(0, (curClip.y - top) / (this.cellSize + 1)) * (this.cellSize + 1)
-        + top;
-    final int minx = Math.max(0, (curClip.x - left) / (this.cellSize + 1))
-      * (this.cellSize + 1) + left;
+      Math.max(0, (curClip.y - top) / (this.cellSize + 1)) * (this.cellSize + 1) + top;
+    final int minx =
+      Math.max(0, (curClip.x - left) / (this.cellSize + 1)) * (this.cellSize + 1) + left;
     final int maxy = Math.min(this.numRows,
       (curClip.y + curClip.height - top + this.cellSize) / (this.cellSize + 1))
       * (this.cellSize + 1) + top;
@@ -144,8 +145,8 @@ public class GridPanel extends JPanel
     g2.setColor(Color.GRAY);
     for (int y = miny; y <= maxy; y += this.cellSize + 1) {
       for (int x = minx; x <= maxx; x += this.cellSize + 1) {
-        final Location loc = this.locationForPoint(
-          new Point(x + this.cellSize / 2, y + this.cellSize / 2));
+        final Location loc =
+          this.locationForPoint(new Point(x + this.cellSize / 2, y + this.cellSize / 2));
         if (loc != null && !this.grid.isValid(loc)) {
           g2.fillRect(x + 1, y + 1, this.cellSize, this.cellSize);
         }
@@ -188,8 +189,8 @@ public class GridPanel extends JPanel
     }
     if (this.currentLocation != null) {
       final Point p = this.pointForLocation(this.currentLocation);
-      g2.drawRect(p.x - this.cellSize / 2 - 2, p.y - this.cellSize / 2 - 2,
-        this.cellSize + 3, this.cellSize + 3);
+      g2.drawRect(p.x - this.cellSize / 2 - 2, p.y - this.cellSize / 2 - 2, this.cellSize + 3,
+        this.cellSize + 3);
     }
   }
 
@@ -281,8 +282,7 @@ public class GridPanel extends JPanel
    */
   @Override
   public Dimension getPreferredSize() {
-    return new Dimension(
-      this.numCols * (this.cellSize + 1) + 1 + this.extraWidth(),
+    return new Dimension(this.numCols * (this.cellSize + 1) + 1 + this.extraWidth(),
       this.numRows * (this.cellSize + 1) + 1 + this.extraHeight());
   }
 
@@ -293,8 +293,7 @@ public class GridPanel extends JPanel
    */
   @Override
   public Dimension getMinimumSize() {
-    return new Dimension(
-      this.numCols * (GridPanel.MIN_CELL_SIZE + 1) + 1 + this.extraWidth(),
+    return new Dimension(this.numCols * (GridPanel.MIN_CELL_SIZE + 1) + 1 + this.extraWidth(),
       this.numRows * (GridPanel.MIN_CELL_SIZE + 1) + 1 + this.extraHeight());
   }
 
@@ -324,8 +323,7 @@ public class GridPanel extends JPanel
     this.repaint();
     final JViewport vp = this.getEnclosingViewport();
     if (vp != null) {
-      if (!this.isPannableUnbounded()
-        || !(vp instanceof PseudoInfiniteViewport)) {
+      if (!this.isPannableUnbounded() || !(vp instanceof PseudoInfiniteViewport)) {
         vp.setViewPosition(this.pointForLocation(loc));
       } else {
         this.showPanTip();
@@ -351,23 +349,19 @@ public class GridPanel extends JPanel
 
   // private helpers to convert between (x,y) and (row,col)
   private int xCoordToCol(final int xCoord) {
-    return (xCoord - 1 - this.getInsets().left) / (this.cellSize + 1)
-      + this.originCol;
+    return (xCoord - 1 - this.getInsets().left) / (this.cellSize + 1) + this.originCol;
   }
 
   private int yCoordToRow(final int yCoord) {
-    return (yCoord - 1 - this.getInsets().top) / (this.cellSize + 1)
-      + this.originRow;
+    return (yCoord - 1 - this.getInsets().top) / (this.cellSize + 1) + this.originRow;
   }
 
   private int colToXCoord(final int col) {
-    return (col - this.originCol) * (this.cellSize + 1) + 1
-      + this.getInsets().left;
+    return (col - this.originCol) * (this.cellSize + 1) + 1 + this.getInsets().left;
   }
 
   private int rowToYCoord(final int row) {
-    return (row - this.originRow) * (this.cellSize + 1) + 1
-      + this.getInsets().top;
+    return (row - this.originRow) * (this.cellSize + 1) + 1 + this.getInsets().top;
   }
 
   /**
@@ -391,12 +385,11 @@ public class GridPanel extends JPanel
     }
     final Object f = this.grid.get(loc);
     if (f != null) {
-      return MessageFormat.format(
-        this.resources.getString("cell.tooltip.nonempty"),
+      return MessageFormat.format(this.resources.getString("cell.tooltip.nonempty"),
         new Object[] {loc, f});
     } else {
-      return MessageFormat.format(
-        this.resources.getString("cell.tooltip.empty"), new Object[] {loc, f});
+      return MessageFormat.format(this.resources.getString("cell.tooltip.empty"),
+        new Object[] {loc, f});
     }
   }
 
@@ -425,8 +418,8 @@ public class GridPanel extends JPanel
    * @param dc the number of columns by which to move the location
    */
   public void moveLocation(final int dr, final int dc) {
-    final Location newLocation = new Location(
-      this.currentLocation.getRow() + dr, this.currentLocation.getCol() + dc);
+    final Location newLocation = new Location(this.currentLocation.getRow() + dr,
+      this.currentLocation.getCol() + dc);
     if (!this.grid.isValid(newLocation)) {
       return;
     }
@@ -452,8 +445,8 @@ public class GridPanel extends JPanel
       int dx = 0;
       int dy = 0;
       final Point p = this.pointForLocation(this.currentLocation);
-      final Rectangle locRect = new Rectangle(p.x - this.cellSize / 2,
-        p.y - this.cellSize / 2, this.cellSize + 1, this.cellSize + 1);
+      final Rectangle locRect = new Rectangle(p.x - this.cellSize / 2, p.y - this.cellSize / 2,
+        this.cellSize + 1, this.cellSize + 1);
       final Rectangle viewRect = viewPort.getViewRect();
       if (!viewRect.contains(locRect)) {
         while (locRect.x < viewRect.x + dx) {
@@ -475,8 +468,7 @@ public class GridPanel extends JPanel
       }
     }
     this.repaint();
-    this.showTip(this.getToolTipText(this.currentLocation),
-      this.pointForLocation(this.currentLocation));
+    this.showTip(this.getToolTipText(this.currentLocation), this.pointForLocation(this.currentLocation));
   }
 
   /**
@@ -495,8 +487,7 @@ public class GridPanel extends JPanel
       this.glassPane.setOpaque(false);
       this.glassPane.setLayout(null); // will control layout manually
       this.glassPane.add(this.tip = new JToolTip());
-      this.tipTimer = new Timer(GridPanel.TIP_DELAY,
-        evt -> GridPanel.this.glassPane.setVisible(false));
+      this.tipTimer = new Timer(GridPanel.TIP_DELAY, evt -> GridPanel.this.glassPane.setVisible(false));
       this.tipTimer.setRepeats(false);
     }
     if (tipText == null) {
@@ -524,8 +515,7 @@ public class GridPanel extends JPanel
       this.cellSize = 0;
     } else {
       final JViewport vp = this.getEnclosingViewport();
-      final Dimension viewableSize =
-        (vp != null) ? vp.getSize() : this.getSize();
+      final Dimension viewableSize = (vp != null) ? vp.getSize() : this.getSize();
       final int desiredCellSize =
         Math.min((viewableSize.height - this.extraHeight()) / this.numRows,
           (viewableSize.width - this.extraWidth()) / this.numCols) - 1;
@@ -537,8 +527,7 @@ public class GridPanel extends JPanel
           this.cellSize *= 2;
         }
       } else {
-        while (this.cellSize / 2 >= Math.max(desiredCellSize,
-          GridPanel.MIN_CELL_SIZE)) {
+        while (this.cellSize / 2 >= Math.max(desiredCellSize, GridPanel.MIN_CELL_SIZE)) {
           this.cellSize /= 2;
         }
       }
@@ -555,14 +544,14 @@ public class GridPanel extends JPanel
   // GridPanel implements the Scrollable interface to get nicer behavior in a
   // JScrollPane. The 5 methods below are the methods in that interface
   @Override
-  public int getScrollableUnitIncrement(final Rectangle visibleRect,
-    final int orientation, final int direction) {
+  public int getScrollableUnitIncrement(final Rectangle visibleRect, final int orientation,
+    final int direction) {
     return this.cellSize + 1;
   }
 
   @Override
-  public int getScrollableBlockIncrement(final Rectangle visibleRect,
-    final int orientation, final int direction) {
+  public int getScrollableBlockIncrement(final Rectangle visibleRect, final int orientation,
+    final int direction) {
     if (orientation == SwingConstants.VERTICAL) {
       return (int) (visibleRect.height * .9);
     } else {
@@ -583,10 +572,8 @@ public class GridPanel extends JPanel
   @Override
   public Dimension getPreferredScrollableViewportSize() {
     return new Dimension(
-      GridPanel.DEFAULT_CELL_COUNT * (GridPanel.DEFAULT_CELL_SIZE + 1) + 1
-        + this.extraWidth(),
-      GridPanel.DEFAULT_CELL_COUNT * (GridPanel.DEFAULT_CELL_SIZE + 1) + 1
-        + this.extraHeight());
+      GridPanel.DEFAULT_CELL_COUNT * (GridPanel.DEFAULT_CELL_SIZE + 1) + 1 + this.extraWidth(),
+      GridPanel.DEFAULT_CELL_COUNT * (GridPanel.DEFAULT_CELL_SIZE + 1) + 1 + this.extraHeight());
   }
 
   // GridPanel implements the PseudoInfiniteViewport.Pannable interface to
@@ -601,8 +588,7 @@ public class GridPanel extends JPanel
 
   @Override
   public boolean isPannableUnbounded() {
-    return this.grid != null
-      && (this.grid.getNumRows() == -1 || this.grid.getNumCols() == -1);
+    return this.grid != null && (this.grid.getNumRows() == -1 || this.grid.getNumCols() == -1);
   }
 
   /**

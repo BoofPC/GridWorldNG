@@ -49,8 +49,7 @@ public abstract class AbstractDisplay implements Display {
    * @param rect rectangle in which to draw
    */
   @Override
-  public void draw(final Object obj, final Component comp, Graphics2D g2,
-    final Rectangle rect) {
+  public void draw(final Object obj, final Component comp, Graphics2D g2, final Rectangle rect) {
     final float scaleFactor = Math.min(rect.width, rect.height);
     g2 = (Graphics2D) g2.create();
     // Translate to center of the object
@@ -58,10 +57,8 @@ public abstract class AbstractDisplay implements Display {
     // Rotate drawing surface before drawing to capture object's
     // orientation (direction).
     if (obj != null) {
-      final Integer direction =
-        (Integer) AbstractDisplay.getProperty(obj, "direction");
-      final int rotationInDegrees =
-        direction == null ? 0 : direction.intValue();
+      final Integer direction = (Integer) AbstractDisplay.getProperty(obj, "direction");
+      final int rotationInDegrees = direction == null ? 0 : direction.intValue();
       g2.rotate(Math.toRadians(rotationInDegrees));
     }
     // Scale to size of rectangle, adjust stroke back to 1-pixel wide
@@ -70,8 +67,7 @@ public abstract class AbstractDisplay implements Display {
     this.draw(obj, comp, g2);
   }
 
-  public static Object getProperty(final Object obj,
-    final String propertyName) {
+  public static Object getProperty(final Object obj, final String propertyName) {
     if (obj == null) {
       return null;
     }

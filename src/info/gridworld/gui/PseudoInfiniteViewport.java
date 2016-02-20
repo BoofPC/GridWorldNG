@@ -25,6 +25,11 @@ import javax.swing.JViewport;
  */
 public class PseudoInfiniteViewport extends JViewport {
   /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
+
+  /**
    * The Pannable interface contains those methods the view installed in a PseudoInfiniteViewport
    * needs to support to enable panning behavior along with scrolling.
    */
@@ -68,7 +73,8 @@ public class PseudoInfiniteViewport extends JViewport {
         this.getPannableView().panBy(hDelta, vDelta);
       } else if (vDelta != 0 && hDelta == 0) {
         this.getPannableView().panBy(hDelta, vDelta);
-      } else {
+      }
+      else {
         changed = false; // no pan action was taken
       }
       this.panPoint = pt;
@@ -82,7 +88,8 @@ public class PseudoInfiniteViewport extends JViewport {
       changed = !this.getViewPosition().equals(pt);
       super.setViewPosition(pt);
     }
-    if (changed || isAdjusting) {
+    if (changed || isAdjusting)
+     {
       this.getPannableView().showPanTip(); // briefly show tip
     }
   }
@@ -93,8 +100,7 @@ public class PseudoInfiniteViewport extends JViewport {
    */
   @Override
   public Point getViewPosition() {
-    return (this.viewIsUnbounded() ? this.getPanCenterPoint()
-      : super.getViewPosition());
+    return (this.viewIsUnbounded() ? this.getPanCenterPoint() : super.getViewPosition());
   }
 
   /**

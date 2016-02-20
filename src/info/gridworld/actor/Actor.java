@@ -126,8 +126,7 @@ public class Actor {
     }
     if (this.grid.get(this.location) != this) {
       throw new IllegalStateException(
-        "The grid contains a different actor at location " + this.location
-          + ".");
+        "The grid contains a different actor at location " + this.location + ".");
     }
     this.grid.remove(this.location);
     this.grid = null;
@@ -148,8 +147,7 @@ public class Actor {
     }
     if (this.grid.get(this.location) != this) {
       throw new IllegalStateException(
-        "The grid contains a different actor at location " + this.location
-          + ".");
+        "The grid contains a different actor at location " + this.location + ".");
     }
     if (!this.grid.isValid(newLocation)) {
       throw new IllegalArgumentException(
@@ -182,7 +180,7 @@ public class Actor {
    */
   @Override
   public String toString() {
-    return this.getClass().getName() + "[location=" + this.location
-      + ",direction=" + this.direction + ",color=" + this.color + "]";
+    return this.getClass().getName() + "[location=" + this.location + ",direction="
+      + this.direction + ",color=" + this.color + "]";
   }
 }

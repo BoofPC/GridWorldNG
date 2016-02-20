@@ -75,10 +75,8 @@ public class ColorEditor extends PropertyEditorSupport {
     }
 
     @Override
-    public void paintIcon(final Component c, final Graphics g, final int x,
-      final int y) {
-      final Rectangle r =
-        new Rectangle(x, y, ColorIcon.WIDTH - 1, ColorIcon.HEIGHT - 1);
+    public void paintIcon(final Component c, final Graphics g, final int x, final int y) {
+      final Rectangle r = new Rectangle(x, y, ColorIcon.WIDTH - 1, ColorIcon.HEIGHT - 1);
       final Graphics2D g2 = (Graphics2D) g;
       final Color oldColor = g2.getColor();
       g2.setColor(this.color);
@@ -105,14 +103,11 @@ public class ColorEditor extends PropertyEditorSupport {
     }
 
     @Override
-    public void paintIcon(final Component c, final Graphics g, final int x,
-      final int y) {
-      final Rectangle r =
-        new Rectangle(x, y, ColorIcon.WIDTH - 1, ColorIcon.HEIGHT - 1);
+    public void paintIcon(final Component c, final Graphics g, final int x, final int y) {
+      final Rectangle r = new Rectangle(x, y, ColorIcon.WIDTH - 1, ColorIcon.HEIGHT - 1);
       final Graphics2D g2 = (Graphics2D) g;
       final Color oldColor = g2.getColor();
-      final Rectangle r1 =
-        new Rectangle(x, y, ColorIcon.WIDTH / 4, ColorIcon.HEIGHT - 1);
+      final Rectangle r1 = new Rectangle(x, y, ColorIcon.WIDTH / 4, ColorIcon.HEIGHT - 1);
       for (int i = 0; i < 4; i++) {
         g2.setColor(this.getColor());
         g2.fill(r1);
@@ -134,8 +129,7 @@ public class ColorEditor extends PropertyEditorSupport {
     ColorEditor.colorIcons = new ColorIcon[ColorEditor.colorValues.length + 1];
     ColorEditor.colorIcons[0] = new RandomColorIcon();
     for (int i = 0; i < ColorEditor.colorValues.length; i++) {
-      ColorEditor.colorIcons[i + 1] =
-        new SolidColorIcon(ColorEditor.colorValues[i]);
+      ColorEditor.colorIcons[i + 1] = new SolidColorIcon(ColorEditor.colorValues[i]);
     }
   }
 }

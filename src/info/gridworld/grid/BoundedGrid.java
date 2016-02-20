@@ -51,8 +51,8 @@ public class BoundedGrid<E> extends AbstractGrid<E> {
 
   @Override
   public boolean isValid(final Location loc) {
-    return 0 <= loc.getRow() && loc.getRow() < this.getNumRows()
-      && 0 <= loc.getCol() && loc.getCol() < this.getNumCols();
+    return 0 <= loc.getRow() && loc.getRow() < this.getNumRows() && 0 <= loc.getCol()
+      && loc.getCol() < this.getNumCols();
   }
 
   @Override

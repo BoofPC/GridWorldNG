@@ -125,8 +125,7 @@ public class MenuMaker<T> {
    * @param menu the menu to which the items should be added
    * @param classes the collection of classes
    */
-  public void addConstructors(final JMenu menu,
-    final Collection<Class> classes) {
+  public void addConstructors(final JMenu menu, final Collection<Class> classes) {
     boolean first = true;
     final Iterator<Class> iter = classes.iterator();
     while (iter.hasNext()) {
@@ -178,6 +177,11 @@ public class MenuMaker<T> {
    * A menu item that shows a method or constructor.
    */
   private class MCItem extends JMenuItem {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public String getDisplayString(final Class retType, final String name,
       final Class[] paramTypes) {
       final StringBuffer b = new StringBuffer();
@@ -238,6 +242,11 @@ public class MenuMaker<T> {
     }
   }
   private abstract class ConstructorItem extends MCItem {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public ConstructorItem(final Constructor c) {
       this.setText(this.getDisplayString(null, c.getDeclaringClass().getName(),
         c.getParameterTypes()));
@@ -272,29 +281,36 @@ public class MenuMaker<T> {
   }
   private class OccupantConstructorItem extends ConstructorItem
     implements ActionListener {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public OccupantConstructorItem(final Constructor c) {
       super(c);
       this.addActionListener(this);
-      this.setIcon(
-        MenuMaker.this.displayMap.getIcon(c.getDeclaringClass(), 16, 16));
+      this.setIcon(MenuMaker.this.displayMap.getIcon(c.getDeclaringClass(), 16, 16));
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void actionPerformed(final ActionEvent event) {
       final T result = (T) this.invokeConstructor();
-      MenuMaker.this.parent.getWorld().add(MenuMaker.this.currentLocation,
-        result);
+      MenuMaker.this.parent.getWorld().add(MenuMaker.this.currentLocation, result);
       MenuMaker.this.parent.repaint();
     }
   }
   private class GridConstructorItem extends ConstructorItem
     implements ActionListener {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public GridConstructorItem(final Constructor c) {
       super(c);
       this.addActionListener(this);
-      this.setIcon(
-        MenuMaker.this.displayMap.getIcon(c.getDeclaringClass(), 16, 16));
+      this.setIcon(MenuMaker.this.displayMap.getIcon(c.getDeclaringClass(), 16, 16));
     }
 
     @Override
@@ -305,13 +321,17 @@ public class MenuMaker<T> {
     }
   }
   private class MethodItem extends MCItem implements ActionListener {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public MethodItem(final Method m) {
       this.setText(this.getDisplayString(m.getReturnType(), m.getName(),
         m.getParameterTypes()));
       this.m = m;
       this.addActionListener(this);
-      this.setIcon(
-        MenuMaker.this.displayMap.getIcon(m.getDeclaringClass(), 16, 16));
+      this.setIcon(MenuMaker.this.displayMap.getIcon(m.getDeclaringClass(), 16, 16));
     }
 
     @Override
@@ -370,6 +390,11 @@ public class MenuMaker<T> {
 
 
 class PropertySheet extends JPanel {
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
+
   /**
    * Constructs a property sheet that shows the editable properties of a given object.
    * 

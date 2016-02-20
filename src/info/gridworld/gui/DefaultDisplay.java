@@ -42,8 +42,7 @@ public class DefaultDisplay implements Display {
    * @param rect rectangle in which to draw
    */
   @Override
-  public void draw(final Object obj, final Component comp, final Graphics2D g2,
-    final Rectangle rect) {
+  public void draw(final Object obj, final Component comp, final Graphics2D g2, final Rectangle rect) {
     Color color = (Color) AbstractDisplay.getProperty(obj, "color");
     if (color == null && obj instanceof Color) {
       color = (Color) obj;
@@ -83,8 +82,8 @@ public class DefaultDisplay implements Display {
    *          sqrt(2)/2 if the text is too large.)
    * @param color the color in which to draw the text
    */
-  protected void paintCenteredText(Graphics2D g2, final String s,
-    final Rectangle rect, double fontHeight, final Color color) {
+  protected void paintCenteredText(Graphics2D g2, final String s, final Rectangle rect,
+    double fontHeight, final Color color) {
     g2 = (Graphics2D) g2.create();
     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
       RenderingHints.VALUE_ANTIALIAS_ON);

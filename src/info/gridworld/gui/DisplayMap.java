@@ -116,8 +116,7 @@ public class DisplayMap {
     }
 
     @Override
-    public void paintIcon(final Component comp, final Graphics g, final int x,
-      final int y) {
+    public void paintIcon(final Component comp, final Graphics g, final int x, final int y) {
       final Graphics2D g2 = (Graphics2D) g;
       final AffineTransform savedTransform = g2.getTransform(); // save current
       this.displayObj.draw(null, comp, g2,

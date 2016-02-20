@@ -9,7 +9,7 @@
  */
 package info.gridworld.actor;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import info.gridworld.grid.Location;
 
@@ -30,9 +30,9 @@ public class Critter extends Actor {
     if (this.getGrid() == null) {
       return;
     }
-    final List<Actor> actors = this.getActors();
+    final ArrayList<Actor> actors = this.getActors();
     this.processActors(actors);
-    final List<Location> moveLocs = this.getMoveLocations();
+    final ArrayList<Location> moveLocs = this.getMoveLocations();
     final Location loc = this.selectMoveLocation(moveLocs);
     this.makeMove(loc);
   }
@@ -44,7 +44,7 @@ public class Critter extends Actor {
    * 
    * @return a list of actors that this critter wishes to process.
    */
-  public List<Actor> getActors() {
+  public ArrayList<Actor> getActors() {
     return this.getGrid().getNeighbors(this.getLocation());
   }
 
@@ -57,7 +57,7 @@ public class Critter extends Actor {
    * 
    * @param actors the actors to be processed
    */
-  public void processActors(final List<Actor> actors) {
+  public void processActors(final ArrayList<Actor> actors) {
     for (final Actor a : actors) {
       if (!(a instanceof Rock) && !(a instanceof Critter)) {
         a.removeSelfFromGrid();
@@ -73,7 +73,7 @@ public class Critter extends Actor {
    * 
    * @return a list of possible locations for the next move
    */
-  public List<Location> getMoveLocations() {
+  public ArrayList<Location> getMoveLocations() {
     return this.getGrid().getEmptyAdjacentLocations(this.getLocation());
   }
 
@@ -84,16 +84,16 @@ public class Critter extends Actor {
    * Postcondition: (1) The returned location is an element of <code>locs</code>, this critter's
    * current location, or <code>null</code>. (2) The state of all actors is unchanged.
    * 
-   * @param moveLocs the possible locations for the next move
+   * @param locs the possible locations for the next move
    * @return the location that was selected for the next move.
    */
-  public Location selectMoveLocation(final List<Location> moveLocs) {
-    final int n = moveLocs.size();
+  public Location selectMoveLocation(final ArrayList<Location> locs) {
+    final int n = locs.size();
     if (n == 0) {
       return this.getLocation();
     }
     final int r = (int) (Math.random() * n);
-    return moveLocs.get(r);
+    return locs.get(r);
   }
 
   /**

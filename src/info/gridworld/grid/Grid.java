@@ -12,7 +12,6 @@
 package info.gridworld.grid;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <code>Grid</code> provides an interface for a two-dimensional, grid-like environment containing
@@ -100,7 +99,7 @@ public interface Grid<E> {
    * @param loc a location in this grid
    * @return an array list of the valid empty locations adjacent to <code>loc</code> in this grid
    */
-  List<Location> getEmptyAdjacentLocations(Location loc);
+  ArrayList<Location> getEmptyAdjacentLocations(Location loc);
 
   /**
    * Gets the valid occupied locations adjacent to a given location in all eight compass directions
@@ -110,7 +109,7 @@ public interface Grid<E> {
    * @param loc a location in this grid
    * @return an array list of the valid occupied locations adjacent to <code>loc</code> in this grid
    */
-  List<Location> getOccupiedAdjacentLocations(Location loc);
+  ArrayList<Location> getOccupiedAdjacentLocations(Location loc);
 
   /**
    * Gets the neighboring occupants in all eight compass directions (north, northeast, east,
@@ -121,5 +120,5 @@ public interface Grid<E> {
    * @return returns an array list of the objects in the occupied locations adjacent to
    *         <code>loc</code> in this grid
    */
-  List<E> getNeighbors(Location loc);
+  ArrayList<E> getNeighbors(Location loc);
 }
