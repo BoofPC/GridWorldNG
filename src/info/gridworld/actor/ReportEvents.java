@@ -6,8 +6,12 @@ import info.gridworld.actor.Shell.Tags;
 import info.gridworld.actor.ShellWorld.Watchman;
 import info.gridworld.grid.Grid;
 import info.gridworld.grid.Location;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 public class ReportEvents {
+  @Data
+  @EqualsAndHashCode(callSuper = true)
   public static class CollisionReportEvent extends ReportEvent {
     private static final long serialVersionUID = 1L;
     private final Actor collider;
@@ -22,27 +26,16 @@ public class ReportEvents {
       this.direction = direction;
     }
 
-    public Actor getCollider() {
-      return collider;
-    }
-
-    public Actor getCollidedWith() {
-      return collidedWith;
-    }
-
-    public int getDirection() {
-      return direction;
-    }
-
     public static BiConsumer<Watchman, ReportEvent> impl() {
-      return (Watchman that, ReportEvent r_) -> {
+      return (final Watchman that, final ReportEvent r_) -> {
         final CollisionReportEvent r = (CollisionReportEvent) r_;
         final Actor collidedWith_ = r.getCollidedWith();
         if (!(collidedWith_ instanceof Shell)) {
           return;
         }
         final Shell collidedWith = (Shell) collidedWith_;
-        if (collidedWith.getTags().contains(Tags.PUSHABLE.get())) {
+        if ((boolean) collidedWith.getTags()
+          .getOrDefault(Tags.PUSHABLE.getTag(), false) == true) {
           final int direction = r.getDirection();
           final Actor collider = r.getCollider();
           final Grid<Actor> grid = collider.getGrid();

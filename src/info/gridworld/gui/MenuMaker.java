@@ -77,9 +77,9 @@ public class MenuMaker<T> {
     this.currentLocation = loc;
     final JPopupMenu menu = new JPopupMenu();
     final Method[] methods = this.getMethods();
-    Class oldDcl = null;
+    Class<?> oldDcl = null;
     for (int i = 0; i < methods.length; i++) {
-      final Class dcl = methods[i].getDeclaringClass();
+      final Class<?> dcl = methods[i].getDeclaringClass();
       if (dcl != Object.class) {
         if (i > 0 && dcl != oldDcl) {
           menu.addSeparator();
@@ -98,20 +98,20 @@ public class MenuMaker<T> {
    * @param loc the location of the occupant to be constructed
    * @return the menu to pop up
    */
-  public JPopupMenu makeConstructorMenu(final Collection<Class> classes,
+  public JPopupMenu makeConstructorMenu(final Collection<Class<?>> classes,
     final Location loc) {
     this.currentLocation = loc;
     final JPopupMenu menu = new JPopupMenu();
     boolean first = true;
-    final Iterator<Class> iter = classes.iterator();
+    final Iterator<Class<?>> iter = classes.iterator();
     while (iter.hasNext()) {
       if (first) {
         first = false;
       } else {
         menu.addSeparator();
       }
-      final Class cl = iter.next();
-      final Constructor[] cons = cl.getConstructors();
+      final Class<?> cl = iter.next();
+      final Constructor<?>[] cons = cl.getConstructors();
       for (int i = 0; i < cons.length; i++) {
         menu.add(new OccupantConstructorItem(cons[i]));
       }
@@ -125,17 +125,18 @@ public class MenuMaker<T> {
    * @param menu the menu to which the items should be added
    * @param classes the collection of classes
    */
-  public void addConstructors(final JMenu menu, final Collection<Class> classes) {
+  public void addConstructors(final JMenu menu,
+    final Collection<Class<?>> classes) {
     boolean first = true;
-    final Iterator<Class> iter = classes.iterator();
+    final Iterator<Class<?>> iter = classes.iterator();
     while (iter.hasNext()) {
       if (first) {
         first = false;
       } else {
         menu.addSeparator();
       }
-      final Class cl = iter.next();
-      final Constructor[] cons = cl.getConstructors();
+      final Class<?> cl = iter.next();
+      final Constructor<?>[] cons = cl.getConstructors();
       for (int i = 0; i < cons.length; i++) {
         menu.add(new GridConstructorItem(cons[i]));
       }
@@ -143,7 +144,7 @@ public class MenuMaker<T> {
   }
 
   private Method[] getMethods() {
-    final Class cl = this.occupant.getClass();
+    final Class<?> cl = this.occupant.getClass();
     final Method[] methods = cl.getMethods();
     Arrays.sort(methods, new Comparator<Method>() {
       @Override
@@ -162,7 +163,7 @@ public class MenuMaker<T> {
         return d1 - d2;
       }
 
-      private int depth(final Class cl) {
+      private int depth(final Class<?> cl) {
         if (cl == null) {
           return 0;
         } else {
@@ -177,13 +178,10 @@ public class MenuMaker<T> {
    * A menu item that shows a method or constructor.
    */
   private class MCItem extends JMenuItem {
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
 
-    public String getDisplayString(final Class retType, final String name,
-      final Class[] paramTypes) {
+    public String getDisplayString(final Class<?> retType, final String name,
+      final Class<?>[] paramTypes) {
       final StringBuffer b = new StringBuffer();
       b.append("<html>");
       if (retType != null) {
@@ -217,7 +215,7 @@ public class MenuMaker<T> {
       }
     }
 
-    public Object makeDefaultValue(final Class type) {
+    public Object makeDefaultValue(final Class<?> type) {
       if (type == int.class) {
         return new Integer(0);
       } else if (type == boolean.class) {
@@ -242,19 +240,16 @@ public class MenuMaker<T> {
     }
   }
   private abstract class ConstructorItem extends MCItem {
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
 
-    public ConstructorItem(final Constructor c) {
+    public ConstructorItem(final Constructor<?> c) {
       this.setText(this.getDisplayString(null, c.getDeclaringClass().getName(),
         c.getParameterTypes()));
       this.c = c;
     }
 
     public Object invokeConstructor() {
-      final Class[] types = this.c.getParameterTypes();
+      final Class<?>[] types = this.c.getParameterTypes();
       Object[] values = new Object[types.length];
       for (int i = 0; i < types.length; i++) {
         values[i] = this.makeDefaultValue(types[i]);
@@ -277,40 +272,37 @@ public class MenuMaker<T> {
       }
     }
 
-    private final Constructor c;
+    private final Constructor<?> c;
   }
   private class OccupantConstructorItem extends ConstructorItem
     implements ActionListener {
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
 
-    public OccupantConstructorItem(final Constructor c) {
+    public OccupantConstructorItem(final Constructor<?> c) {
       super(c);
       this.addActionListener(this);
-      this.setIcon(MenuMaker.this.displayMap.getIcon(c.getDeclaringClass(), 16, 16));
+      this.setIcon(
+        MenuMaker.this.displayMap.getIcon(c.getDeclaringClass(), 16, 16));
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void actionPerformed(final ActionEvent event) {
       final T result = (T) this.invokeConstructor();
-      MenuMaker.this.parent.getWorld().add(MenuMaker.this.currentLocation, result);
+      MenuMaker.this.parent.getWorld().add(MenuMaker.this.currentLocation,
+        result);
       MenuMaker.this.parent.repaint();
     }
   }
   private class GridConstructorItem extends ConstructorItem
     implements ActionListener {
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
 
-    public GridConstructorItem(final Constructor c) {
+    public GridConstructorItem(final Constructor<?> c) {
       super(c);
       this.addActionListener(this);
-      this.setIcon(MenuMaker.this.displayMap.getIcon(c.getDeclaringClass(), 16, 16));
+      this.setIcon(
+        MenuMaker.this.displayMap.getIcon(c.getDeclaringClass(), 16, 16));
     }
 
     @Override
@@ -321,9 +313,6 @@ public class MenuMaker<T> {
     }
   }
   private class MethodItem extends MCItem implements ActionListener {
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
 
     public MethodItem(final Method m) {
@@ -331,12 +320,13 @@ public class MenuMaker<T> {
         m.getParameterTypes()));
       this.m = m;
       this.addActionListener(this);
-      this.setIcon(MenuMaker.this.displayMap.getIcon(m.getDeclaringClass(), 16, 16));
+      this.setIcon(
+        MenuMaker.this.displayMap.getIcon(m.getDeclaringClass(), 16, 16));
     }
 
     @Override
     public void actionPerformed(final ActionEvent event) {
-      final Class[] types = this.m.getParameterTypes();
+      final Class<?>[] types = this.m.getParameterTypes();
       Object[] values = new Object[types.length];
       for (int i = 0; i < types.length; i++) {
         values[i] = this.makeDefaultValue(types[i]);
@@ -381,7 +371,7 @@ public class MenuMaker<T> {
   }
 
   private T occupant;
-  private Grid currentGrid;
+  private Grid<?> currentGrid;
   private Location currentLocation;
   private final WorldFrame<T> parent;
   private final DisplayMap displayMap;
@@ -390,9 +380,6 @@ public class MenuMaker<T> {
 
 
 class PropertySheet extends JPanel {
-  /**
-   * 
-   */
   private static final long serialVersionUID = 1L;
 
   /**
@@ -400,7 +387,7 @@ class PropertySheet extends JPanel {
    * 
    * @param object the object whose properties are being edited
    */
-  public PropertySheet(final Class[] types, final Object[] values) {
+  public PropertySheet(final Class<?>[] types, final Object[] values) {
     this.values = values;
     this.editors = new PropertyEditor[types.length];
     this.setLayout(new FormLayout());
@@ -431,7 +418,7 @@ class PropertySheet extends JPanel {
    * @return a property editor that edits the property with the given descriptor and updates the
    *         given object
    */
-  public PropertyEditor getEditor(final Class type) {
+  public PropertyEditor getEditor(final Class<?> type) {
     PropertyEditor editor;
     editor = PropertySheet.defaultEditors.get(type);
     if (editor != null) {
@@ -455,7 +442,7 @@ class PropertySheet extends JPanel {
       return editor.getCustomEditor();
     } else if (tags != null) {
       // make a combo box that shows all tags
-      final JComboBox comboBox = new JComboBox(tags);
+      final JComboBox<?> comboBox = new JComboBox<Object>(tags);
       comboBox.setSelectedItem(text);
       comboBox.addItemListener(event -> {
         if (event.getStateChange() == ItemEvent.SELECTED) {
@@ -500,7 +487,7 @@ class PropertySheet extends JPanel {
 
   private final PropertyEditor[] editors;
   private final Object[] values;
-  private static Map<Class, PropertyEditor> defaultEditors;
+  private static Map<Class<?>, PropertyEditor> defaultEditors;
 
   // workaround for Web Start bug
   public static class StringEditor extends PropertyEditorSupport {
@@ -516,7 +503,7 @@ class PropertySheet extends JPanel {
   }
 
   static {
-    PropertySheet.defaultEditors = new HashMap<Class, PropertyEditor>();
+    PropertySheet.defaultEditors = new HashMap<Class<?>, PropertyEditor>();
     PropertySheet.defaultEditors.put(String.class, new StringEditor());
     PropertySheet.defaultEditors.put(Location.class, new LocationEditor());
     PropertySheet.defaultEditors.put(Color.class, new ColorEditor());

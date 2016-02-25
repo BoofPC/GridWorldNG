@@ -58,9 +58,6 @@ import info.gridworld.world.World;
  * are not intended to be understood by AP CS students.
  */
 public class WorldFrame<T> extends JFrame {
-  /**
-   * 
-   */
   private static final long serialVersionUID = 1L;
   private GUIController<T> control;
   private GridPanel display;
@@ -69,7 +66,7 @@ public class WorldFrame<T> extends JFrame {
   private World<T> world;
   private ResourceBundle resources;
   private DisplayMap displayMap;
-  private Set<Class> gridClasses;
+  private Set<Class<?>> gridClasses;
   private JMenu newGridMenu;
   private static int count = 0;
 
@@ -81,7 +78,8 @@ public class WorldFrame<T> extends JFrame {
   public WorldFrame(final World<T> world) {
     this.world = world;
     WorldFrame.count++;
-    this.resources = ResourceBundle.getBundle(this.getClass().getName() + "Resources");
+    this.resources =
+      ResourceBundle.getBundle(this.getClass().getName() + "Resources");
     try {
       System.setProperty("sun.awt.exception.handler",
         GUIExceptionHandler.class.getName());
@@ -130,8 +128,8 @@ public class WorldFrame<T> extends JFrame {
           return false;
         }
         text = text.substring(0, n) + text.substring(n + PRESSED.length());
-        final boolean consumed =
-          WorldFrame.this.getWorld().keyPressed(text, WorldFrame.this.display.getCurrentLocation());
+        final boolean consumed = WorldFrame.this.getWorld().keyPressed(text,
+          WorldFrame.this.display.getCurrentLocation());
         if (consumed) {
           WorldFrame.this.repaint();
         }
@@ -141,7 +139,8 @@ public class WorldFrame<T> extends JFrame {
     scrollPane.setViewport(new PseudoInfiniteViewport(scrollPane));
     scrollPane.setViewportView(this.display);
     content.add(scrollPane, BorderLayout.CENTER);
-    this.gridClasses = new TreeSet<Class>((a, b) -> a.getName().compareTo(b.getName()));
+    this.gridClasses =
+      new TreeSet<Class<?>>((a, b) -> a.getName().compareTo(b.getName()));
     for (final String name : world.getGridClasses()) {
       try {
         this.gridClasses.add(Class.forName(name));
@@ -152,7 +151,8 @@ public class WorldFrame<T> extends JFrame {
     final Grid<T> gr = world.getGrid();
     this.gridClasses.add(gr.getClass());
     this.makeNewGridMenu();
-    this.control = new GUIController<T>(this, this.display, this.displayMap, this.resources);
+    this.control =
+      new GUIController<T>(this, this.display, this.displayMap, this.resources);
     content.add(this.control.controlPanel(), BorderLayout.SOUTH);
     this.messageArea = new JTextArea(2, 35);
     this.messageArea.setEditable(false);
@@ -239,7 +239,8 @@ public class WorldFrame<T> extends JFrame {
     return menu;
   }
 
-  private JMenuItem makeMenuItem(final String resource, final ActionListener listener) {
+  private JMenuItem makeMenuItem(final String resource,
+    final ActionListener listener) {
     final JMenuItem item = new JMenuItem();
     this.configureMenuItem(item, resource, listener);
     return item;
@@ -266,7 +267,8 @@ public class WorldFrame<T> extends JFrame {
     }
   }
 
-  private void configureAbstractButton(final AbstractButton button, final String resource) {
+  private void configureAbstractButton(final AbstractButton button,
+    final String resource) {
     String title = this.resources.getString(resource);
     final int i = title.indexOf('&');
     int mnemonic = 0;
@@ -291,31 +293,41 @@ public class WorldFrame<T> extends JFrame {
     this.menuItemsDisabledDuringRun.add(this.newGridMenu);
     menu.add(this.makeMenuItem("menu.file.quit", e -> System.exit(0)));
     mbar.add(menu = this.makeMenu("menu.view"));
-    menu.add(this.makeMenuItem("menu.view.up", e -> WorldFrame.this.display.moveLocation(-1, 0)));
-    menu.add(this.makeMenuItem("menu.view.down", e -> WorldFrame.this.display.moveLocation(1, 0)));
-    menu.add(this.makeMenuItem("menu.view.left", e -> WorldFrame.this.display.moveLocation(0, -1)));
-    menu.add(this.makeMenuItem("menu.view.right", e -> WorldFrame.this.display.moveLocation(0, 1)));
+    menu.add(this.makeMenuItem("menu.view.up",
+      e -> WorldFrame.this.display.moveLocation(-1, 0)));
+    menu.add(this.makeMenuItem("menu.view.down",
+      e -> WorldFrame.this.display.moveLocation(1, 0)));
+    menu.add(this.makeMenuItem("menu.view.left",
+      e -> WorldFrame.this.display.moveLocation(0, -1)));
+    menu.add(this.makeMenuItem("menu.view.right",
+      e -> WorldFrame.this.display.moveLocation(0, 1)));
     JMenuItem viewEditMenu;
-    menu
-      .add(viewEditMenu = this.makeMenuItem("menu.view.edit", e -> WorldFrame.this.control.editLocation()));
+    menu.add(viewEditMenu = this.makeMenuItem("menu.view.edit",
+      e -> WorldFrame.this.control.editLocation()));
     this.menuItemsDisabledDuringRun.add(viewEditMenu);
     JMenuItem viewDeleteMenu;
-    menu.add(
-      viewDeleteMenu = this.makeMenuItem("menu.view.delete", e -> WorldFrame.this.control.deleteLocation()));
+    menu.add(viewDeleteMenu = this.makeMenuItem("menu.view.delete",
+      e -> WorldFrame.this.control.deleteLocation()));
     this.menuItemsDisabledDuringRun.add(viewDeleteMenu);
-    menu.add(this.makeMenuItem("menu.view.zoomin", e -> WorldFrame.this.display.zoomIn()));
-    menu.add(this.makeMenuItem("menu.view.zoomout", e -> WorldFrame.this.display.zoomOut()));
+    menu.add(this.makeMenuItem("menu.view.zoomin",
+      e -> WorldFrame.this.display.zoomIn()));
+    menu.add(this.makeMenuItem("menu.view.zoomout",
+      e -> WorldFrame.this.display.zoomOut()));
     mbar.add(menu = this.makeMenu("menu.help"));
-    menu.add(this.makeMenuItem("menu.help.about", e -> WorldFrame.this.showAboutPanel()));
-    menu.add(this.makeMenuItem("menu.help.help", e -> WorldFrame.this.showHelp()));
-    menu.add(this.makeMenuItem("menu.help.license", e -> WorldFrame.this.showLicense()));
+    menu.add(this.makeMenuItem("menu.help.about",
+      e -> WorldFrame.this.showAboutPanel()));
+    menu.add(
+      this.makeMenuItem("menu.help.help", e -> WorldFrame.this.showHelp()));
+    menu.add(this.makeMenuItem("menu.help.license",
+      e -> WorldFrame.this.showLicense()));
     this.setRunMenuItemsEnabled(true);
     this.setJMenuBar(mbar);
   }
 
   private void makeNewGridMenu() {
     this.newGridMenu.removeAll();
-    final MenuMaker<T> maker = new MenuMaker<T>(this, this.resources, this.displayMap);
+    final MenuMaker<T> maker =
+      new MenuMaker<T>(this, this.resources, this.displayMap);
     maker.addConstructors(this.newGridMenu, this.gridClasses);
   }
 
@@ -334,10 +346,12 @@ public class WorldFrame<T> extends JFrame {
    * Brings up a simple dialog with some general information.
    */
   private void showAboutPanel() {
-    String html = MessageFormat.format(this.resources.getString("dialog.about.text"),
-      new Object[] {this.resources.getString("version.id")});
-    final String[] props = {"java.version", "java.vendor", "java.home", "os.name",
-        "os.arch", "os.version", "user.name", "user.home", "user.dir"};
+    String html =
+      MessageFormat.format(this.resources.getString("dialog.about.text"),
+        new Object[] {this.resources.getString("version.id")});
+    final String[] props =
+      {"java.version", "java.vendor", "java.home", "os.name", "os.arch",
+          "os.version", "user.name", "user.home", "user.dir"};
     html += "<table border='1'>";
     for (final String prop : props) {
       try {
@@ -418,10 +432,12 @@ public class WorldFrame<T> extends JFrame {
       e.printStackTrace(new PrintWriter(writer));
       area.setText(writer.toString());
       area.setCaretPosition(0);
-      final String copyOption = WorldFrame.this.resources.getString("dialog.error.copy");
-      final JOptionPane pane = new JOptionPane(new JScrollPane(area),
-        JOptionPane.ERROR_MESSAGE, JOptionPane.YES_NO_OPTION, null,
-        new String[] {copyOption, WorldFrame.this.resources.getString("cancel")});
+      final String copyOption =
+        WorldFrame.this.resources.getString("dialog.error.copy");
+      final JOptionPane pane =
+        new JOptionPane(new JScrollPane(area), JOptionPane.ERROR_MESSAGE,
+          JOptionPane.YES_NO_OPTION, null, new String[] {copyOption,
+              WorldFrame.this.resources.getString("cancel")});
       pane.createDialog(WorldFrame.this, e.toString()).setVisible(true);
       if (copyOption.equals(pane.getValue())) {
         area.setSelectionStart(0);

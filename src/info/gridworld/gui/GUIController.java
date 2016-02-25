@@ -44,8 +44,8 @@ import info.gridworld.world.World;
 public class GUIController<T> {
   public static final int INDEFINITE = 0, FIXED_STEPS = 1, PROMPT_STEPS = 2;
   private static final int MIN_DELAY_MSECS = 10, MAX_DELAY_MSECS = 1000;
-  private static final int INITIAL_DELAY =
-    GUIController.MIN_DELAY_MSECS + (GUIController.MAX_DELAY_MSECS - GUIController.MIN_DELAY_MSECS) / 2;
+  private static final int INITIAL_DELAY = GUIController.MIN_DELAY_MSECS
+    + (GUIController.MAX_DELAY_MSECS - GUIController.MIN_DELAY_MSECS) / 2;
   private Timer timer;
   private JButton stepButton, runButton, stopButton;
   private JComponent controlPanel;
@@ -55,7 +55,7 @@ public class GUIController<T> {
   private ResourceBundle resources;
   private DisplayMap displayMap;
   private boolean running;
-  private Set<Class> occupantClasses;
+  private Set<Class<?>> occupantClasses;
 
   /**
    * Creates a new controller tied to the specified display and gui frame.
@@ -72,7 +72,8 @@ public class GUIController<T> {
     this.parentFrame = parent;
     this.displayMap = displayMap;
     this.makeControls();
-    this.occupantClasses = new TreeSet<Class>((a, b) -> a.getName().compareTo(b.getName()));
+    this.occupantClasses =
+      new TreeSet<Class<?>>((a, b) -> a.getName().compareTo(b.getName()));
     final World<T> world = this.parentFrame.getWorld();
     final Grid<T> gr = world.getGrid();
     for (final Location loc : gr.getOccupiedLocations()) {
@@ -85,12 +86,14 @@ public class GUIController<T> {
         ex.printStackTrace();
       }
     }
-    this.timer = new Timer(GUIController.INITIAL_DELAY, evt -> GUIController.this.step());
+    this.timer =
+      new Timer(GUIController.INITIAL_DELAY, evt -> GUIController.this.step());
     this.display.addMouseListener(new MouseAdapter() {
       @Override
       public void mousePressed(final MouseEvent evt) {
         final Grid<T> gr = GUIController.this.parentFrame.getWorld().getGrid();
-        final Location loc = GUIController.this.display.locationForPoint(evt.getPoint());
+        final Location loc =
+          GUIController.this.display.locationForPoint(evt.getPoint());
         if (loc != null && gr.isValid(loc) && !GUIController.this.isRunning()) {
           GUIController.this.display.setCurrentLocation(loc);
           GUIController.this.locationClicked();
@@ -116,7 +119,7 @@ public class GUIController<T> {
   }
 
   private void addOccupant(final T occupant) {
-    Class cl = occupant.getClass();
+    Class<?> cl = occupant.getClass();
     do {
       if ((cl.getModifiers() & Modifier.ABSTRACT) == 0) {
         this.occupantClasses.add(cl);
@@ -166,7 +169,8 @@ public class GUIController<T> {
     this.stepButton = new JButton(this.resources.getString("button.gui.step"));
     this.runButton = new JButton(this.resources.getString("button.gui.run"));
     this.stopButton = new JButton(this.resources.getString("button.gui.stop"));
-    this.controlPanel.setLayout(new BoxLayout(this.controlPanel, BoxLayout.X_AXIS));
+    this.controlPanel
+      .setLayout(new BoxLayout(this.controlPanel, BoxLayout.X_AXIS));
     this.controlPanel.setBorder(BorderFactory.createEtchedBorder());
     final Dimension spacer =
       new Dimension(5, this.stepButton.getPreferredSize().height + 10);
@@ -180,9 +184,10 @@ public class GUIController<T> {
     this.stepButton.setEnabled(false);
     this.stopButton.setEnabled(false);
     this.controlPanel.add(Box.createRigidArea(spacer));
-    this.controlPanel.add(new JLabel(this.resources.getString("slider.gui.slow")));
-    final JSlider speedSlider =
-      new JSlider(GUIController.MIN_DELAY_MSECS, GUIController.MAX_DELAY_MSECS, GUIController.INITIAL_DELAY);
+    this.controlPanel
+      .add(new JLabel(this.resources.getString("slider.gui.slow")));
+    final JSlider speedSlider = new JSlider(GUIController.MIN_DELAY_MSECS,
+      GUIController.MAX_DELAY_MSECS, GUIController.INITIAL_DELAY);
     speedSlider.setInverted(true);
     speedSlider.setPreferredSize(
       new Dimension(100, speedSlider.getPreferredSize().height));
@@ -196,12 +201,14 @@ public class GUIController<T> {
       map = map.getParent();
     }
     this.controlPanel.add(speedSlider);
-    this.controlPanel.add(new JLabel(this.resources.getString("slider.gui.fast")));
+    this.controlPanel
+      .add(new JLabel(this.resources.getString("slider.gui.fast")));
     this.controlPanel.add(Box.createRigidArea(new Dimension(5, 0)));
     this.stepButton.addActionListener(e -> GUIController.this.step());
     this.runButton.addActionListener(e -> GUIController.this.run());
     this.stopButton.addActionListener(e -> GUIController.this.stop());
-    speedSlider.addChangeListener(evt -> GUIController.this.timer.setDelay(((JSlider) evt.getSource()).getValue()));
+    speedSlider.addChangeListener(evt -> GUIController.this.timer
+      .setDelay(((JSlider) evt.getSource()).getValue()));
   }
 
   /**
@@ -236,7 +243,8 @@ public class GUIController<T> {
       if (occupant == null) {
         final MenuMaker<T> maker =
           new MenuMaker<T>(this.parentFrame, this.resources, this.displayMap);
-        final JPopupMenu popup = maker.makeConstructorMenu(this.occupantClasses, loc);
+        final JPopupMenu popup =
+          maker.makeConstructorMenu(this.occupantClasses, loc);
         final Point p = this.display.pointForLocation(loc);
         popup.show(this.display, p.x, p.y);
       } else {

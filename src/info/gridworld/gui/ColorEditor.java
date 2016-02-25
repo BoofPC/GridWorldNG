@@ -26,7 +26,7 @@ import javax.swing.JComboBox;
  */
 public class ColorEditor extends PropertyEditorSupport {
   public ColorEditor() {
-    this.combo = new JComboBox(ColorEditor.colorIcons);
+    this.combo = new JComboBox<Object>(ColorEditor.colorIcons);
   }
 
   @Override
@@ -119,7 +119,7 @@ public class ColorEditor extends PropertyEditorSupport {
     }
   }
 
-  private final JComboBox combo;
+  private final JComboBox<?> combo;
   private static Color[] colorValues = {Color.BLACK, Color.BLUE, Color.CYAN,
       Color.DARK_GRAY, Color.GRAY, Color.GREEN, Color.LIGHT_GRAY, Color.MAGENTA,
       Color.ORANGE, Color.PINK, Color.RED, Color.WHITE, Color.YELLOW};

@@ -12,13 +12,14 @@
 package info.gridworld.grid;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A <code>BoundedGrid</code> is a rectangular grid with a finite number of rows and columns. <br />
  * The implementation of this class is testable on the AP CS AB exam.
  */
 public class BoundedGrid<E> extends AbstractGrid<E> {
-  private final Object[][] occupantArray; // the array storing the grid elements
+  private final List<List<E>> occupants; // the array storing the grid elements
 
   /**
    * Constructs an empty bounded grid with the given dimensions. (Precondition:
@@ -34,25 +35,28 @@ public class BoundedGrid<E> extends AbstractGrid<E> {
     if (cols <= 0) {
       throw new IllegalArgumentException("cols <= 0");
     }
-    this.occupantArray = new Object[rows][cols];
+    this.occupants = new ArrayList<>(rows);
+    for (int i = rows; i > 0; i--) {
+      occupants.set(i, new ArrayList<>(cols));
+    }
   }
 
   @Override
   public int getNumRows() {
-    return this.occupantArray.length;
+    return this.occupants.size();
   }
 
   @Override
   public int getNumCols() {
     // Note: according to the constructor precondition, numRows() > 0, so
     // theGrid[0] is non-null.
-    return this.occupantArray[0].length;
+    return this.occupants.get(0).size();
   }
 
   @Override
   public boolean isValid(final Location loc) {
-    return 0 <= loc.getRow() && loc.getRow() < this.getNumRows() && 0 <= loc.getCol()
-      && loc.getCol() < this.getNumCols();
+    return 0 <= loc.getRow() && loc.getRow() < this.getNumRows()
+      && 0 <= loc.getCol() && loc.getCol() < this.getNumCols();
   }
 
   @Override
@@ -76,7 +80,7 @@ public class BoundedGrid<E> extends AbstractGrid<E> {
     if (!this.isValid(loc)) {
       throw new IllegalArgumentException("Location " + loc + " is not valid");
     }
-    return (E) this.occupantArray[loc.getRow()][loc.getCol()]; // unavoidable warning
+    return this.occupants.get(loc.getRow()).get(loc.getCol());
   }
 
   @Override
@@ -89,7 +93,7 @@ public class BoundedGrid<E> extends AbstractGrid<E> {
     }
     // Add the object to the grid.
     final E oldOccupant = this.get(loc);
-    this.occupantArray[loc.getRow()][loc.getCol()] = obj;
+    this.occupants.get(loc.getRow()).set(loc.getCol(), obj);
     return oldOccupant;
   }
 
@@ -100,7 +104,7 @@ public class BoundedGrid<E> extends AbstractGrid<E> {
     }
     // Remove the object from the grid.
     final E r = this.get(loc);
-    this.occupantArray[loc.getRow()][loc.getCol()] = null;
+    this.occupants.get(loc.getRow()).set(loc.getCol(), null);
     return r;
   }
 }

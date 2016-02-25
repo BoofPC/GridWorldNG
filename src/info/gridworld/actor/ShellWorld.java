@@ -1,9 +1,15 @@
 package info.gridworld.actor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import info.gridworld.grid.Grid;
+import info.gridworld.grid.Location;
+import lombok.Getter;
+
+@Getter
 public class ShellWorld extends ActorWorld {
   public static class Watchman implements ReportListener {
     private final ActorWorld world;
@@ -12,15 +18,16 @@ public class ShellWorld extends ActorWorld {
 
     public Watchman(final ActorWorld world) {
       this.world = world;
-      reportImpls.put(ReportEvents.CollisionReportEvent.class,
+      this.reportImpls.put(ReportEvents.CollisionReportEvent.class,
         ReportEvents.CollisionReportEvent.impl());
     }
 
     public ActorWorld getWorld() {
-      return world;
+      return this.world;
     }
 
-    public void report(ReportEvent r) {
+    @Override
+    public void report(final ReportEvent r) {
       final Class<? extends ReportEvent> clazz = r.getClass();
       final BiConsumer<Watchman, ReportEvent> impl =
         this.reportImpls.get(clazz);
@@ -30,9 +37,24 @@ public class ShellWorld extends ActorWorld {
     }
   }
 
-  private Watchman watchman = new Watchman(this);
+  private final Watchman watchman = new Watchman(this);
 
-  public Watchman getWatchman() {
-    return watchman;
+  @Override
+  public void step() {
+    final Grid<Actor> gr = this.getGrid();
+    final ArrayList<Actor> actors = new ArrayList<Actor>();
+    for (final Location loc : gr.getOccupiedLocations()) {
+      actors.add(gr.get(loc));
+    }
+    for (final Actor a : actors) {
+      // only act if another actor hasn't removed a
+      if (a.getGrid() == gr) {
+        if (a instanceof Shell) {
+          ((Shell) a)
+            .respond(new ActorEvents.StepEvent("I see what you did there"));
+        }
+        a.act();
+      }
+    }
   }
 }

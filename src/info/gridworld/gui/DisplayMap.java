@@ -27,7 +27,8 @@ import javax.swing.Icon;
  * are not intended to be understood by AP CS students.
  */
 public class DisplayMap {
-  private final HashMap<Class, Display> map = new HashMap<Class, Display>();
+  private final HashMap<Class<?>, Display> map =
+    new HashMap<Class<?>, Display>();
   private final Display defaultDisplay = new DefaultDisplay();
 
   /**
@@ -36,10 +37,10 @@ public class DisplayMap {
    * @param the occupant class
    * @return the ImageDisplay or (classname)Display object to display it, or null if none was found
    */
-  private Display createDisplay(final Class cl) {
+  private Display createDisplay(final Class<?> cl) {
     try {
       final String className = cl.getName();
-      final Class dcl = Class.forName(className + "Display");
+      final Class<?> dcl = Class.forName(className + "Display");
       if (Display.class.isAssignableFrom(dcl)) {
         final Display display = (Display) dcl.newInstance();
         this.map.put(cl, display);
@@ -63,7 +64,7 @@ public class DisplayMap {
    * 
    * @param obj the object to display
    */
-  public Display findDisplayFor(final Class cl) {
+  public Display findDisplayFor(final Class<?> cl) {
     // Go up through the class hierarchy for obj and see
     // if there is a display for its class or superclasses.
     if (cl == Object.class) {
@@ -91,7 +92,7 @@ public class DisplayMap {
    * @param h the icon height
    * @return the icon
    */
-  public Icon getIcon(final Class cl, final int w, final int h) {
+  public Icon getIcon(final Class<?> cl, final int w, final int h) {
     return new DisplayIcon(cl, w, h);
   }
 
@@ -99,7 +100,7 @@ public class DisplayMap {
     private final Display displayObj;
     private final int width, height;
 
-    public DisplayIcon(final Class cl, final int w, final int h) {
+    public DisplayIcon(final Class<?> cl, final int w, final int h) {
       this.displayObj = DisplayMap.this.findDisplayFor(cl);
       this.width = w;
       this.height = h;
@@ -116,7 +117,8 @@ public class DisplayMap {
     }
 
     @Override
-    public void paintIcon(final Component comp, final Graphics g, final int x, final int y) {
+    public void paintIcon(final Component comp, final Graphics g, final int x,
+      final int y) {
       final Graphics2D g2 = (Graphics2D) g;
       final AffineTransform savedTransform = g2.getTransform(); // save current
       this.displayObj.draw(null, comp, g2,

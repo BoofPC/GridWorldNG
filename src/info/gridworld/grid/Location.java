@@ -17,7 +17,7 @@ package info.gridworld.grid;
  * grid. <br />
  * The API of this class is testable on the AP CS A and AB exams.
  */
-public class Location implements Comparable {
+public class Location implements Comparable<Location> {
   private final int row; // row location in grid
   private final int col; // column location in grid
   /**
@@ -118,11 +118,13 @@ public class Location implements Comparable {
    */
   public Location getAdjacentLocation(final int direction) {
     // reduce mod 360 and round to closest multiple of 45
-    int adjustedDirection = (direction + Location.HALF_RIGHT / 2) % Location.FULL_CIRCLE;
+    int adjustedDirection =
+      (direction + Location.HALF_RIGHT / 2) % Location.FULL_CIRCLE;
     if (adjustedDirection < 0) {
       adjustedDirection += Location.FULL_CIRCLE;
     }
-    adjustedDirection = (adjustedDirection / Location.HALF_RIGHT) * Location.HALF_RIGHT;
+    adjustedDirection =
+      (adjustedDirection / Location.HALF_RIGHT) * Location.HALF_RIGHT;
     int dc = 0;
     int dr = 0;
     if (adjustedDirection == Location.EAST) {
@@ -187,7 +189,8 @@ public class Location implements Comparable {
       return false;
     }
     final Location otherLoc = (Location) other;
-    return this.getRow() == otherLoc.getRow() && this.getCol() == otherLoc.getCol();
+    return this.getRow() == otherLoc.getRow()
+      && this.getCol() == otherLoc.getCol();
   }
 
   /**
@@ -212,8 +215,7 @@ public class Location implements Comparable {
    *         <code>other</code>
    */
   @Override
-  public int compareTo(final Object other) {
-    final Location otherLoc = (Location) other;
+  public int compareTo(final Location otherLoc) {
     if (this.getRow() < otherLoc.getRow()) {
       return -1;
     }

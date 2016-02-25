@@ -32,7 +32,7 @@ import javax.imageio.ImageIO;
  * are not intended to be understood by AP CS students.
  */
 public class ImageDisplay extends AbstractDisplay {
-  private final Class cl;
+  private final Class<?> cl;
   private final String imageFilename;
   private static final String imageExtension = ".gif";
   private final Map<String, Image> tintedVersions = new HashMap<String, Image>();
@@ -43,7 +43,7 @@ public class ImageDisplay extends AbstractDisplay {
    * 
    * @param imageFilename name of file containing image
    */
-  public ImageDisplay(final Class cl) throws IOException {
+  public ImageDisplay(final Class<?> cl) throws IOException {
     this.cl = cl;
     this.imageFilename = cl.getName().replace('.', '/');
     final URL url = cl.getClassLoader().getResource(this.imageFilename + ImageDisplay.imageExtension);
