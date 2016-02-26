@@ -2,12 +2,13 @@ package info.gridworld.actor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
 import info.gridworld.grid.Grid;
-import info.gridworld.grid.Location;
 import lombok.Getter;
+import lombok.val;
 
 @Getter
 public class ShellWorld extends ActorWorld {
@@ -41,20 +42,28 @@ public class ShellWorld extends ActorWorld {
 
   @Override
   public void step() {
-    final Grid<Actor> gr = this.getGrid();
-    final ArrayList<Actor> actors = new ArrayList<Actor>();
-    for (final Location loc : gr.getOccupiedLocations()) {
-      actors.add(gr.get(loc));
+    val grid = this.getGrid();
+    final List<Actor> actors = new ArrayList<>();
+    for (val loc : grid.getOccupiedLocations()) {
+      actors.add(grid.get(loc));
     }
-    for (final Actor a : actors) {
-      // only act if another actor hasn't removed a
-      if (a.getGrid() == gr) {
-        if (a instanceof Shell) {
-          ((Shell) a)
+    for (val actor : actors) {
+      // only act if another actor hasn't removed actor
+      if (actor.getGrid() == grid) {
+        if (actor instanceof Shell) {
+          ((Shell) actor)
             .respond(new ActorEvents.StepEvent("I see what you did there"));
         }
-        a.act();
+        actor.act();
       }
     }
+  }
+
+  public ShellWorld(Grid<Actor> grid) {
+    super(grid);
+  }
+
+  public ShellWorld() {
+    super();
   }
 }

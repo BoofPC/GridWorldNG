@@ -2,9 +2,11 @@ package info.gridworld.cashgrab;
 
 import info.gridworld.actor.Rock;
 import info.gridworld.cashgrab.CashGrab.Bank;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-@Data
+@Getter
+@RequiredArgsConstructor
 public class Coin extends Rock {
   private final int id;
   private final Bank bank;

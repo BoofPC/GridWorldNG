@@ -18,8 +18,8 @@ public class ActorEvent extends EventObject {
   public static class ActorInfo {
     Integer id;
     String type;
-    Integer distance;
-    Integer direction;
+    Double distance;
+    Double direction;
     Color color;
   }
 

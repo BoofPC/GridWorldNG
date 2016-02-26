@@ -5,6 +5,7 @@ import java.util.function.BiConsumer;
 
 import info.gridworld.grid.Location;
 import lombok.Data;
+import lombok.val;
 
 public class Actions {
   @Data
@@ -25,17 +26,31 @@ public class Actions {
       return (final Shell that, final Action a) -> {
         final int distance = Math.min(((MoveAction) a).getDistance(), maxDist);
         final int direction = that.getDirection();
-        final Location destination = that.getLocation();
+        val grid = that.getGrid();
+        val maxRow = grid.getNumRows() - 1;
+        val maxCol = grid.getNumCols() - 1;
+        Location dest = that.getLocation();
         for (int i = distance; i > 0; i--) {
-          destination.getAdjacentLocation(direction);
+          dest = dest.getAdjacentLocation(direction);
         }
-        final Actor destActor = that.getGrid().get(destination);
+        {
+          int row = dest.getRow();
+          int col = dest.getCol();
+          if (maxRow != -1) {
+            row = Math.max(Math.min(row, maxRow), 0);
+          }
+          if (maxCol != -1) {
+            col = Math.max(Math.min(col, maxCol), 0);
+          }
+          dest = new Location(row, col);
+        }
+        val destActor = grid.get(dest);
         if (destActor != null) {
           that.getWatchman().report(new ReportEvents.CollisionReportEvent(that,
             that, destActor, direction));
           return;
         }
-        that.moveTo(destination);
+        that.moveTo(dest);
       };
     }
   }
@@ -77,7 +92,7 @@ public class Actions {
 
     public static BiConsumer<Shell, Action> impl() {
       return (final Shell that, final Action a) -> {
-        final Color color = ((ColorAction) a).getColor();
+        val color = ((ColorAction) a).getColor();
         that.setColor(color);
       };
     }

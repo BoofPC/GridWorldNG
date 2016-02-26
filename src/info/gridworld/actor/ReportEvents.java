@@ -4,10 +4,9 @@ import java.util.function.BiConsumer;
 
 import info.gridworld.actor.Shell.Tags;
 import info.gridworld.actor.ShellWorld.Watchman;
-import info.gridworld.grid.Grid;
-import info.gridworld.grid.Location;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.val;
 
 public class ReportEvents {
   @Data
@@ -28,20 +27,20 @@ public class ReportEvents {
 
     public static BiConsumer<Watchman, ReportEvent> impl() {
       return (final Watchman that, final ReportEvent r_) -> {
-        final CollisionReportEvent r = (CollisionReportEvent) r_;
-        final Actor collidedWith_ = r.getCollidedWith();
+        val r = (CollisionReportEvent) r_;
+        val collidedWith_ = r.getCollidedWith();
         if (!(collidedWith_ instanceof Shell)) {
           return;
         }
-        final Shell collidedWith = (Shell) collidedWith_;
+        val collidedWith = (Shell) collidedWith_;
         if ((boolean) collidedWith.getTags()
           .getOrDefault(Tags.PUSHABLE.getTag(), false) == true) {
           final int direction = r.getDirection();
           final Actor collider = r.getCollider();
-          final Grid<Actor> grid = collider.getGrid();
-          final Location destLoc = collidedWith.getLocation();
-          final Location pushLoc = destLoc.getAdjacentLocation(direction);
-          final Actor displaced = grid.get(pushLoc);
+          val grid = collider.getGrid();
+          val destLoc = collidedWith.getLocation();
+          val pushLoc = destLoc.getAdjacentLocation(direction);
+          val displaced = grid.get(pushLoc);
           if (displaced != null) {
             that.report(new CollisionReportEvent(that, collidedWith, displaced,
               direction));

@@ -6,9 +6,9 @@ import info.gridworld.actor.Action;
 import info.gridworld.actor.Actor;
 import info.gridworld.actor.Shell;
 import info.gridworld.cashgrab.CashGrab.Bank;
-import info.gridworld.grid.Grid;
 import info.gridworld.grid.Location;
 import lombok.Data;
+import lombok.val;
 
 public class Actions {
   @Data
@@ -29,21 +29,20 @@ public class Actions {
     public static BiConsumer<Shell, Action> impl(final int maxDist,
       final int maxMine) {
       return (final Shell that, final Action a) -> {
-        final Bank bank =
-          (Bank) that.getTags().get(CashGrab.Tags.MINABLE.getTag());
+        val bank = (Bank) that.getTags().get(CashGrab.Tags.MINABLE.getTag());
         if (bank == null) {
           return;
         }
         final double distance =
           Math.min(((CollectCoinAction) a).getDistance(), maxDist);
         final double direction = that.getDirection();
-        final Location loc = that.getLocation();
-        final Grid<Actor> grid = that.getGrid();
+        val loc = that.getLocation();
+        val grid = that.getGrid();
         final int offsetX =
           (int) (distance * Math.cos(Math.toRadians(direction)));
         final int offsetY =
           (int) (distance * Math.sin(Math.toRadians(direction)));
-        final Location targetLoc =
+        val targetLoc =
           new Location(loc.getRow() + offsetX, loc.getCol() + offsetY);
         final Actor target = grid.get(targetLoc);
         final int id = that.getId();
