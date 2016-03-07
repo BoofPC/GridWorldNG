@@ -5,21 +5,19 @@ import java.util.function.BiConsumer;
 import info.gridworld.actor.Action;
 import info.gridworld.actor.Actor;
 import info.gridworld.actor.Shell;
+import info.gridworld.actor.Util;
 import info.gridworld.cashgrab.CashGrab.Bank;
 import info.gridworld.grid.Location;
 import lombok.Data;
 import lombok.val;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class Actions {
   @Data
-  public static class CollectCoinAction implements Action {
-    private final double direction;
+  public class CollectCoinAction implements Action {
     private final double distance;
-
-    @Override
-    public String getType() {
-      return "CollectCoin";
-    }
+    private final double direction;
 
     @Override
     public boolean isFinal() {
@@ -38,12 +36,10 @@ public class Actions {
         final double direction = that.getDirection();
         val loc = that.getLocation();
         val grid = that.getGrid();
-        final int offsetX =
-          (int) (distance * Math.cos(Math.toRadians(direction)));
-        final int offsetY =
-          (int) (distance * Math.sin(Math.toRadians(direction)));
-        val targetLoc =
-          new Location(loc.getRow() + offsetX, loc.getCol() + offsetY);
+        val offsets =
+          Util.polarToRect(distance, direction + that.getDirection());
+        val targetLoc = new Location((int) (loc.getRow() + offsets.getKey()),
+          (int) (loc.getCol() + offsets.getValue()));
         final Actor target = grid.get(targetLoc);
         final int id = that.getId();
         int targetId = -1;
@@ -57,6 +53,35 @@ public class Actions {
         }
         if (bank.getBalance(targetId) > 0) {
           bank.transfer(targetId, id, maxMine);
+        }
+      };
+    }
+  }
+  @Data
+  public class ConsumeAction implements Action {
+    private final double distance;
+    private final double direction;
+
+    @Override
+    public boolean isFinal() {
+      return true;
+    }
+
+    public static BiConsumer<Shell, Action> impl(final int maxDist) {
+      return (final Shell that, final Action a) -> {
+        if (!((boolean) that.getTag(CashGrab.Tags.PREDATOR).orElse(false))) {
+          return;
+        }
+        val loc = that.getLocation();
+        val ca = ((ConsumeAction) a);
+        val grid = that.getGrid();
+        val offsets = Util.polarToRect(ca.getDistance(),
+          ca.getDirection() + that.getDirection());
+        val preyLoc = new Location((int) (loc.getRow() + offsets.getKey()),
+          (int) (loc.getCol() + offsets.getValue()));
+        val prey = grid.get(preyLoc);
+        if (prey != null) {
+          prey.removeSelfFromGrid();
         }
       };
     }

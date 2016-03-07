@@ -3,6 +3,7 @@ package info.gridworld.actor;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -12,30 +13,29 @@ import info.gridworld.actor.Actions.MoveAction;
 import info.gridworld.actor.Actions.TurnAction;
 import info.gridworld.actor.ActorEvent.ActorInfo;
 import info.gridworld.actor.ShellWorld.Watchman;
-import info.gridworld.grid.Location;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 public class Shell extends Actor {
   @Getter
   @RequiredArgsConstructor
-  public enum Tags implements info.gridworld.actor.Tags {
-    PUSHABLE("Shell.Pushable", (Boolean) true);
+  public enum Tags implements info.gridworld.actor.Tag {
+    PUSHABLE("Shell.Pushable");
     private final String tag;
-    private final Object initial;
   }
 
-  private final int id;
-  private final ActorListener brain;
-  private final Watchman watchman;
-  private Iterable<Action> nextActions;
-  private final Map<Class<? extends Action>, BiConsumer<Shell, Action>> actionImpls =
+  @Getter private final int id;
+  @Getter private final @NonNull ActorListener brain;
+  @Getter private final @NonNull Watchman watchman;
+  private Stream<Action> nextActions;
+  private final @NonNull Map<Class<? extends Action>, BiConsumer<Shell, Action>> actionImpls =
     new HashMap<>();
-  private final Map<String, Object> tags = new HashMap<>();
+  @Getter private final @NonNull Map<String, Object> tags = new HashMap<>();
 
-  public Shell(final int id, final ActorListener brain,
-    final Watchman watchman) {
+  public Shell(final int id, final @NonNull ActorListener brain,
+    final @NonNull Watchman watchman) {
     this.id = id;
     this.brain = brain;
     this.watchman = watchman;
@@ -44,56 +44,50 @@ public class Shell extends Actor {
     this.actionImpls.put(ColorAction.class, ColorAction.impl());
   }
 
-  public int getId() {
-    return id;
+  public Shell tag(String tag) {
+    this.tag(tag, null);
+    return this;
   }
 
-  private Stream<Actor> actorsInRadius(int sightRadius) {
-    val stream = Stream.<Actor>builder();
-    val grid = this.getGrid();
-    val maxRow = grid.getNumRows() - 1;
-    val maxCol = grid.getNumCols() - 1;
-    val myLoc = this.getLocation();
-    val myRow = myLoc.getRow();
-    val myCol = myLoc.getCol();
-    val startRow = Math.max(myRow - sightRadius, 0);
-    val endRow = Math.min(myRow + sightRadius,
-      (maxRow == -1) ? Integer.MAX_VALUE : maxRow);
-    // wheeee, square radii
-    for (int row = startRow; row < endRow; row++) {
-      val startCol = Math.max(myCol - sightRadius, 0);
-      val endCol = Math.min(myCol + sightRadius,
-        (maxCol == -1) ? Integer.MAX_VALUE : maxCol);
-      for (int col = Math.max(startCol, 0); col < endCol; col++) {
-        val loc = new Location(row, col);
-        val actor = grid.get(loc);
-        if (actor == null) {
-          continue;
-        }
-        stream.add(actor);
-      }
-    }
-    return stream.build();
+  public Shell tag(String tag, Object value) {
+    this.tags.put(tag, value);
+    return this;
+  }
+
+  public Shell tag(Tag tag) {
+    return this.tag(tag.getTag());
+  }
+
+  public Shell tag(Tag tag, Object value) {
+    return this.tag(tag.getTag(), value);
+  }
+
+  public Optional<Object> getTag(String tag) {
+    return Optional.ofNullable(this.tags.get(tag));
+  }
+
+  public Optional<Object> getTag(Tag tag) {
+    return Optional.ofNullable(this.tags.get(tag.getTag()));
   }
 
   public void respond(final ActorEvent event) {
-    val that = ActorInfo.builder().id(this.id).distance(0.0)
-      .color(this.getColor()).build();
+    val that = ActorInfo.builder().id(Optional.of(this.id))
+      .distance(Optional.of(0.0)).color(Optional.of(this.getColor())).build();
     final Set<ActorInfo> environment = new HashSet<>();
     val myLoc = this.getLocation();
-    val myRow = myLoc.getRow();
-    val myCol = myLoc.getCol();
+    val myLocRect = Util.locToRect(myLoc);
     final int sightRadius = 3;
-    this.actorsInRadius(sightRadius).forEach(actor -> {
-      val actorInfo = ActorInfo.builder().type(actor.getClass().getName());
+    Util.actorsInRadius(this, sightRadius).forEach(actor -> {
+      val actorInfo =
+        ActorInfo.builder().type(Optional.of(actor.getClass().getName()));
       val actorLoc = actor.getLocation();
-      final int actorRow = actorLoc.getRow();
-      final int actorCol = actorLoc.getCol();
-      val dRow = actorRow - myRow;
-      val dCol = actorCol - myCol;
-      actorInfo.direction(Math.toDegrees(Math.atan2(dRow, dCol)))
-        .distance(Math.hypot(dRow, dCol));
-      actorInfo.color(actor.getColor());
+      val actorLocRect = Util.locToRect(actorLoc);
+      val offset = Util.Pairs.thread(myLocRect, actorLocRect, (x, y) -> x - y);
+      val offsetPolar = Util.Pairs.apply(offset, Util::rectToPolar);
+      actorInfo.distance(Optional.of(offsetPolar.getKey()))
+        .direction(Optional.of(Util.normalizeDegrees(
+          actor.getDirection() + Math.toDegrees(offsetPolar.getValue()))));
+      actorInfo.color(Optional.of(actor.getColor()));
       environment.add(actorInfo.build());
     });
     this.nextActions = this.brain.eventResponse(event, that, environment);
@@ -104,7 +98,7 @@ public class Shell extends Actor {
     if (this.nextActions == null) {
       return;
     }
-    for (final Action a : this.nextActions) {
+    for (final Action a : (Iterable<Action>) this.nextActions::iterator) {
       if (a == null) {
         continue;
       }
@@ -121,13 +115,5 @@ public class Shell extends Actor {
       }
     }
     this.nextActions = null;
-  }
-
-  public Map<String, Object> getTags() {
-    return this.tags;
-  }
-
-  public Watchman getWatchman() {
-    return this.watchman;
   }
 }

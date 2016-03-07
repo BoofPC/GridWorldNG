@@ -1,7 +1,5 @@
 package info.gridworld.actor;
 
-public interface Tags {
+public interface Tag {
   String getTag();
-
-  Object getInitial();
 }

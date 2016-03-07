@@ -7,24 +7,22 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 import info.gridworld.grid.Grid;
+import info.gridworld.grid.Location;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.val;
 
 @Getter
 public class ShellWorld extends ActorWorld {
   public static class Watchman implements ReportListener {
-    private final ActorWorld world;
+    @Getter private final @NonNull ShellWorld world;
     private final Map<Class<? extends ReportEvent>, BiConsumer<Watchman, ReportEvent>> reportImpls =
       new HashMap<>();
 
-    public Watchman(final ActorWorld world) {
+    public Watchman(final @NonNull ShellWorld world) {
       this.world = world;
       this.reportImpls.put(ReportEvents.CollisionReportEvent.class,
         ReportEvents.CollisionReportEvent.impl());
-    }
-
-    public ActorWorld getWorld() {
-      return this.world;
     }
 
     @Override
@@ -38,7 +36,17 @@ public class ShellWorld extends ActorWorld {
     }
   }
 
-  private final Watchman watchman = new Watchman(this);
+  private final @NonNull Watchman watchman = new Watchman(this);
+  private final @NonNull Map<Integer, Shell> shells = new HashMap<>();
+
+  @Override
+  public void add(Location loc, Actor occupant) {
+    if (occupant instanceof Shell) {
+      val shell = (Shell) occupant;
+      this.shells.put(shell.getId(), shell);
+    }
+    super.add(loc, occupant);
+  }
 
   @Override
   public void step() {

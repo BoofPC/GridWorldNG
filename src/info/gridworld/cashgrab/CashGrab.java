@@ -14,16 +14,19 @@ import info.gridworld.world.World;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class CashGrab {
   @Getter
   @RequiredArgsConstructor
-  public enum Tags implements info.gridworld.actor.Tags {
-    MINABLE("CashGrab.Minable", null);
+  public enum Tags implements info.gridworld.actor.Tag {
+    MINABLE("CashGrab.Minable", null), IS_FEMALE("CashGrab.IsFemale",
+      true), PREDATOR("CashGrab.Predator", true);
     private final String tag;
     private final Object initial;
   }
-  public static class Bank {
+  public class Bank {
     private final Map<Integer, Integer> balances = new HashMap<>();
 
     public int getBalance(int id) {
@@ -44,20 +47,19 @@ public class CashGrab {
     }
   }
 
-  public static Stream.Builder<Actor> addShell(Stream.Builder<Actor> actors,
-    ShellWorld world, AtomicReference<Integer> id, ActorListener brain) {
-    return actors.add(new Shell(id.getAndUpdate(x -> x + 1), new CalebBug(),
-      world.getWatchman()));
+  public Shell genShell(ShellWorld world, AtomicReference<Integer> id,
+    ActorListener brain) {
+    return new Shell(id.getAndUpdate(x -> x + 1), brain, world.getWatchman());
   }
 
-  public static Stream.Builder<Actor> addShells(Stream.Builder<Actor> actors,
+  public Stream.Builder<Actor> addShells(Stream.Builder<Actor> actors,
     ShellWorld world, AtomicReference<Integer> id,
     Stream<ActorListener> brains) {
-    brains.forEach(brain -> addShell(actors, world, id, brain));
+    brains.forEach(brain -> actors.add(genShell(world, id, brain)));
     return actors;
   }
 
-  public static <T> void scatter(World<T> world, Stream<T> things) {
+  public <T> void scatter(World<T> world, Stream<T> things) {
     things.forEach(t -> Optional.ofNullable(world.getRandomEmptyLocation())
       .ifPresent(loc -> world.add(loc, t)));
   }

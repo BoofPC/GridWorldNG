@@ -1,12 +1,17 @@
 package info.gridworld.actor;
 
+import java.io.Serializable;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class ActorEvents {
   @Data
   @EqualsAndHashCode(callSuper = true)
-  public static class StepEvent extends ActorEvent {
+  public class StepEvent extends ActorEvent {
     private static final long serialVersionUID = 1L;
 
     public StepEvent(final Object source) {
@@ -15,11 +20,23 @@ public class ActorEvents {
   }
   @Data
   @EqualsAndHashCode(callSuper = true)
-  public static class CollisionEvent extends ActorEvent {
+  public class MessageEvent extends ActorEvent {
     private static final long serialVersionUID = 1L;
-    private final ActorInfo collidedWith;
+    private final Serializable message;
 
-    public CollisionEvent(final Object source, final ActorInfo collidedWith) {
+    public MessageEvent(final Object source, final Serializable message) {
+      super(source, "Step");
+      this.message = message;
+    }
+  }
+  @Data
+  @EqualsAndHashCode(callSuper = true)
+  public class CollisionEvent extends ActorEvent {
+    private static final long serialVersionUID = 1L;
+    private final @NonNull ActorInfo collidedWith;
+
+    public CollisionEvent(final Object source,
+      final @NonNull ActorInfo collidedWith) {
       super(source, "Collision");
       this.collidedWith = collidedWith;
     }
