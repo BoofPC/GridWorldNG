@@ -38,7 +38,7 @@ public class ReportEvents {
           return;
         }
         val collidedWith = (Shell) collidedWith_;
-        if ((boolean) collidedWith.getTag(Tags.PUSHABLE).orElse(false)) {
+        if ((boolean) collidedWith.getTagOrDefault(Tags.PUSHABLE, false)) {
           final int direction = r.getDirection();
           final Actor collider = r.getCollider();
           val grid = collider.getGrid();

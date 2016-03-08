@@ -69,7 +69,7 @@ public class Actions {
 
     public static BiConsumer<Shell, Action> impl(final int maxDist) {
       return (final Shell that, final Action a) -> {
-        if (!((boolean) that.getTag(CashGrab.Tags.PREDATOR).orElse(false))) {
+        if (!((boolean) that.getTagOrDefault(CashGrab.Tags.PREDATOR, false))) {
           return;
         }
         val loc = that.getLocation();

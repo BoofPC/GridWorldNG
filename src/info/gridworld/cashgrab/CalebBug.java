@@ -2,7 +2,6 @@ package info.gridworld.cashgrab;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -21,14 +20,14 @@ public class CalebBug implements ActorListener {
     final Set<ActorInfo> environment) {
     final List<Action> actions = new ArrayList<>();
     if (e instanceof StepEvent) {
-      final Optional<ActorInfo> coin_ = environment.stream()
-        .filter(a -> a.getType().equals(Coin.class.getName())).findFirst();
-      if (coin_.isPresent()) {
-        final ActorInfo coin = coin_.get();
-        final Optional<Double> direction = coin.getDirection();
-        final Optional<Double> distance = coin.getDistance();
-        if (direction.isPresent() && distance.isPresent()) {
-          actions.add(new CollectCoinAction(direction.get(), distance.get()));
+      final ActorInfo coin = environment.stream()
+        .filter(a -> a.getType().equals(Coin.class.getName())).findFirst()
+        .orElse(null);
+      if (coin != null) {
+        final Double direction = coin.getDirection();
+        final Double distance = coin.getDistance();
+        if (direction != null && distance != null) {
+          actions.add(new CollectCoinAction(direction, distance));
         }
       } else {
         if (Math.random() < 0.5) {

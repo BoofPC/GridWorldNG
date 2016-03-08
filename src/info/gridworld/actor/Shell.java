@@ -3,7 +3,6 @@ package info.gridworld.actor;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -62,32 +61,40 @@ public class Shell extends Actor {
     return this.tag(tag.getTag(), value);
   }
 
-  public Optional<Object> getTag(String tag) {
-    return Optional.ofNullable(this.tags.get(tag));
+  public Object getTag(String tag) {
+    return this.tags.get(tag);
   }
 
-  public Optional<Object> getTag(Tag tag) {
-    return Optional.ofNullable(this.tags.get(tag.getTag()));
+  public Object getTagOrDefault(String tag, Object defaultValue) {
+    final Object value = this.getTag(tag);
+    return value == null ? defaultValue : value;
+  }
+
+  public Object getTag(Tag tag) {
+    return this.tags.get(tag.getTag());
+  }
+
+  public Object getTagOrDefault(Tag tag, Object defaultValue) {
+    final Object value = this.getTag(tag);
+    return value == null ? defaultValue : value;
   }
 
   public void respond(final ActorEvent event) {
-    val that = ActorInfo.builder().id(Optional.of(this.id))
-      .distance(Optional.of(0.0)).color(Optional.of(this.getColor())).build();
+    val that = ActorInfo.builder().id(this.id).distance(0.0)
+      .color(this.getColor()).build();
     final Set<ActorInfo> environment = new HashSet<>();
     val myLoc = this.getLocation();
     val myLocRect = Util.locToRect(myLoc);
     final int sightRadius = 3;
     Util.actorsInRadius(this, sightRadius).forEach(actor -> {
-      val actorInfo =
-        ActorInfo.builder().type(Optional.of(actor.getClass().getName()));
+      val actorInfo = ActorInfo.builder().type(actor.getClass().getName());
       val actorLoc = actor.getLocation();
       val actorLocRect = Util.locToRect(actorLoc);
       val offset = Util.Pairs.thread(myLocRect, actorLocRect, (x, y) -> x - y);
       val offsetPolar = Util.Pairs.apply(offset, Util::rectToPolar);
-      actorInfo.distance(Optional.of(offsetPolar.getKey()))
-        .direction(Optional.of(Util.normalizeDegrees(
-          actor.getDirection() + Math.toDegrees(offsetPolar.getValue()))));
-      actorInfo.color(Optional.of(actor.getColor()));
+      actorInfo.distance(offsetPolar.getKey()).direction(Util.normalizeDegrees(
+        actor.getDirection() + Math.toDegrees(offsetPolar.getValue())));
+      actorInfo.color(actor.getColor());
       environment.add(actorInfo.build());
     });
     this.nextActions = this.brain.eventResponse(event, that, environment);

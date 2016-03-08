@@ -2,7 +2,6 @@ package info.gridworld.cashgrab;
 
 import java.awt.Color;
 import java.io.Serializable;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -35,10 +34,10 @@ public class HunterCritter implements ActorListener {
     public static class Info implements Serializable {
       private static final long serialVersionUID = 1L;
       UUID uuid;
-      Optional<Integer> id;
-      Optional<Double> mateDirection;
-      Optional<Double> mateDistance;
-      Optional<Double> mateId;
+      Integer id;
+      Double mateDirection;
+      Double mateDistance;
+      Double mateId;
     }
 
     private static final long serialVersionUID = 1L;
@@ -51,7 +50,7 @@ public class HunterCritter implements ActorListener {
   private boolean firstRun = true;
   private int time = 0;
   private int lastBaby = 0;
-  private Optional<MatingCall.Info> mate = Optional.empty();
+  private MatingCall.Info mate = null;
   private final UUID uuid = UUID.randomUUID();
 
   @Override
@@ -63,9 +62,8 @@ public class HunterCritter implements ActorListener {
       matingCall: if (message_ instanceof MatingCall) {
         val message = (MatingCall) message_;
         if (time >= BABY_TIME) {
-          if (mate.isPresent()) {
-            val mate_ = mate.get();
-            if (!mate_.getUuid().equals(message.getInfo().getUuid())) {
+          if (mate != null) {
+            if (!mate.getUuid().equals(message.getInfo().getUuid())) {
               break matingCall;
             }
           }
@@ -79,18 +77,18 @@ public class HunterCritter implements ActorListener {
         time++;
         lastBaby++;
         if (lastBaby > BABY_TIME) {
-          if (mate.isPresent()) {
+          if (mate != null) {
             break finalAction;
           }
           val courtAction = court(environment);
-          if (courtAction.isPresent()) {
+          if (courtAction != null) {
             //mate = Optional.of(courtAction.get());
-            actions.add(courtAction.get().getKey());
+            actions.add(courtAction.getKey());
           }
         }
         val eatAction = eatPrey(environment);
-        if (eatAction.isPresent()) {
-          actions.add(eatAction.get());
+        if (eatAction != null) {
+          actions.add(eatAction);
           break finalAction;
         }
         if (Math.random() < 0.5) {
@@ -105,29 +103,29 @@ public class HunterCritter implements ActorListener {
     return actions.build();
   }
 
-  private Optional<Pair<Action, ActorInfo>> court(Set<ActorInfo> environment) {
+  private Pair<Action, ActorInfo> court(Set<ActorInfo> environment) {
     val name = this.getClass().getName();
     val lover = environment.stream()
-      .filter(a -> a.getType().map(t -> t.equals(name)).orElse(true)).findAny();
-    return Util.Pairs
-      .ofOptional(
-        lover
-          .flatMap(
-            a -> Util.Pairs.ofOptional(a.getDistance(), a.getDirection()))
-          .map(
-            p -> new MessageAction(Either.right(Either.right(p)), "hey baby")),
-      lover);
+      .filter(a -> Util.orElse(a.getType(), "").equals(name)).findAny()
+      .orElse(null);
+    val loverLocation = Util.Pairs
+      .liftNull(new Pair<>(lover.getDistance(), lover.getDirection()));
+    return Util.Pairs.liftNull(new Pair<>(
+      Util.applyNullable(loverLocation,
+        p -> new MessageAction(Either.right(Either.right(p)), "hey baby")),
+      lover));
   }
 
-  private Optional<Action> eatPrey(Set<ActorInfo> environment) {
+  private Action eatPrey(Set<ActorInfo> environment) {
     val name = this.getClass().getName();
-    return environment.stream()
-      .filter(a -> !a.getType().map(t -> t.equals(name)).orElse(false))
-      .sorted(
-        (a1, a2) -> Double.compare(a1.getDistance().orElse(Double.MAX_VALUE),
-          a2.getDistance().orElse(Double.MAX_VALUE)))
-      .findFirst()
-      .flatMap(a -> Util.Pairs.ofOptional(a.getDistance(), a.getDirection()))
-      .map(p -> Util.Pairs.apply(p, ConsumeAction::new));
+    val prey = environment.stream()
+      .filter(a -> !Util.orElse(a.getType(), "").equals(name))
+      .sorted((a1, a2) -> Double.compare(
+        Util.orElse(a1.getDistance(), Double.MAX_VALUE),
+        Util.orElse(a2.getDistance(), Double.MAX_VALUE)))
+      .findFirst().orElse(null);
+    return Util.Pairs.applyNullable(
+      Util.Pairs.liftNull(new Pair<>(prey.getDistance(), prey.getDirection())),
+      ConsumeAction::new);
   }
 }

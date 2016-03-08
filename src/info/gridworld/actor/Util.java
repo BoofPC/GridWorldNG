@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.channels.Channels;
 import java.nio.channels.Pipe;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -171,14 +170,47 @@ public class Util {
         funs.getValue().apply(p.getValue(), q.getValue()));
     }
 
-    public <A, B> Optional<Pair<A, B>> ofOptional(Optional<A> x,
-      Optional<B> y) {
-      if (x.isPresent() && y.isPresent()) {
-        return Optional.of(new Pair<>(x.get(), y.get()));
-      } else {
-        return Optional.empty();
-      }
+    public <A, B, C> C applyNullable(Pair<A, B> p, BiFunction<A, B, C> fun) {
+      return Util.applyNullable(p.getKey(), p.getValue(), fun);
     }
+
+    public <A, B, C> C applyNullableOrDefault(Pair<A, B> p,
+      BiFunction<A, B, C> fun, C defaultValue) {
+      return Util.applyNullableOrDefault(p.getKey(), p.getValue(), fun,
+        defaultValue);
+    }
+
+    public <A, B> Pair<A, B> liftNull(Pair<A, B> p) {
+      return Util.applyNullable(p.getKey(), p.getValue(), Pair<A, B>::new);
+    }
+
+    public <A, B> Pair<A, B> liftNullOrDefault(Pair<A, B> p,
+      Pair<A, B> defaultValue) {
+      return Util.applyNullableOrDefault(p.getKey(), p.getValue(),
+        Pair<A, B>::new, defaultValue);
+    }
+  }
+
+  public <A> A orElse(A value, A defaultValue) {
+    return value == null ? defaultValue : value;
+  }
+
+  public <A, B> B applyNullable(A a, Function<A, B> fun) {
+    return a == null ? null : fun.apply(a);
+  }
+
+  public <A, B> B applyNullableOrDefault(A a, Function<A, B> fun,
+    B defaultValue) {
+    return a == null ? defaultValue : fun.apply(a);
+  }
+
+  public <A, B, C> C applyNullable(A a, B b, BiFunction<A, B, C> fun) {
+    return (a == null || b == null) ? null : fun.apply(a, b);
+  }
+
+  public <A, B, C> C applyNullableOrDefault(A a, B b, BiFunction<A, B, C> fun,
+    C defaultValue) {
+    return (a == null || b == null) ? defaultValue : fun.apply(a, b);
   }
 
   public Pair<Double, Double> rectToPolar(double x, double y) {

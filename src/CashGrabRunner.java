@@ -7,7 +7,6 @@ import info.gridworld.actor.Shell;
 import info.gridworld.actor.ShellWorld;
 import info.gridworld.cashgrab.CalebBug;
 import info.gridworld.cashgrab.CashGrab;
-import info.gridworld.cashgrab.HunterCritter;
 import info.gridworld.grid.BoundedGrid;
 import info.gridworld.grid.Grid;
 
@@ -25,11 +24,13 @@ public class CashGrabRunner {
         .filter(s -> s.getBrain() instanceof CalebBug)
         .map(s -> s.tag(Shell.Tags.PUSHABLE)));
     final AtomicReference<Boolean> isFemale = new AtomicReference<>(true);
+    /*
     CashGrab.scatter(world, Stream.<Actor>generate(() -> {
       final boolean female = isFemale.getAndUpdate(b -> !b);
       return CashGrab.genShell(world, id, new HunterCritter(female))
         .tag(CashGrab.Tags.IS_FEMALE.getTag(), female);
     }).limit(10));
+    */
     world.show();
   }
 }
