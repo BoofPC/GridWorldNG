@@ -72,7 +72,7 @@ public class Actions {
             final double direction = offsetPolar.getValue();
             val loc = that.getLocation();
             val offsets = Util.polarToRect(distance,
-              Math.toRadians(direction + that.getDirection()));
+              Util.polarRight(Math.toRadians(that.getDirection() + direction)));
             val targetLoc =
               new Location((int) (loc.getRow() + offsets.getKey()),
                 (int) (loc.getCol() + offsets.getValue()));
@@ -117,19 +117,6 @@ public class Actions {
       return true;
     }
 
-    // TODO move to a better place
-    public static Location sanitize(Location loc, int maxRow, int maxCol) {
-      int row = loc.getRow();
-      int col = loc.getCol();
-      if (maxRow != -1) {
-        row = Math.max(Math.min(row, maxRow), 0);
-      }
-      if (maxCol != -1) {
-        col = Math.max(Math.min(col, maxCol), 0);
-      }
-      return new Location(row, col);
-    }
-
     public static BiConsumer<Shell, Action> impl(final int maxDist) {
       return (final Shell that, final Action a) -> {
         final int distance = Math.min(((MoveAction) a).getDistance(), maxDist);
@@ -139,7 +126,7 @@ public class Actions {
         for (int i = distance; i > 0; i--) {
           dest = dest.getAdjacentLocation(direction);
         }
-        dest = sanitize(dest, grid.getNumRows() - 1, grid.getNumCols() - 1);
+        dest = Util.sanitize(dest, grid);
         val destActor = grid.get(dest);
         if (destActor != null) {
           that.getWatchman().report(new ReportEvents.CollisionReportEvent(that,

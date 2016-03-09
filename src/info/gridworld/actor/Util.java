@@ -6,12 +6,18 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.channels.Channels;
 import java.nio.channels.Pipe;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import info.gridworld.grid.Grid;
 import info.gridworld.grid.Location;
+import info.gridworld.world.World;
 import javafx.util.Pair;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -91,23 +97,22 @@ public class Util {
     }
   }
 
-  public Stream<Actor> actorsInRadius(final Shell that,
-    final double shoutRange) {
+  public Stream<Actor> actorsInRadius(final Shell that, final double radius) {
     val stream = Stream.<Actor>builder();
     val grid = that.getGrid();
-    val maxRow = grid.getNumRows() - 1;
-    val maxCol = grid.getNumCols() - 1;
+    val numRows = grid.getNumRows();
+    val numCols = grid.getNumCols();
     val myLoc = that.getLocation();
     val myRow = myLoc.getRow();
     val myCol = myLoc.getCol();
-    val startRow = (int) Math.max(myRow - shoutRange, 0);
-    val endRow = (int) Math.min(myRow + shoutRange,
-      (maxRow == -1) ? Integer.MAX_VALUE : maxRow);
+    val startRow = (int) Math.max(myRow - radius, 0);
+    val endRow = (int) Math.min(myRow + radius,
+      (numRows == -1) ? Integer.MAX_VALUE : numRows);
     // wheeee, square radii
     for (int row = startRow; row < endRow; row++) {
-      val startCol = (int) Math.max(myCol - shoutRange, 0);
-      val endCol = (int) Math.min(myCol + shoutRange,
-        (maxCol == -1) ? Integer.MAX_VALUE : maxCol);
+      val startCol = (int) Math.max(myCol - radius, 0);
+      val endCol = (int) Math.min(myCol + radius,
+        (numCols == -1) ? Integer.MAX_VALUE : numCols);
       for (int col = Math.max(startCol, 0); col < endCol; col++) {
         if (row == myRow && col == myCol) {
           continue;
@@ -180,8 +185,12 @@ public class Util {
         defaultValue);
     }
 
+    public <A, B> Pair<A, B> liftNull(A a, B b) {
+      return Util.applyNullable(a, b, Pair<A, B>::new);
+    }
+
     public <A, B> Pair<A, B> liftNull(Pair<A, B> p) {
-      return Util.applyNullable(p.getKey(), p.getValue(), Pair<A, B>::new);
+      return liftNull(p.getKey(), p.getValue());
     }
 
     public <A, B> Pair<A, B> liftNullOrDefault(Pair<A, B> p,
@@ -191,12 +200,18 @@ public class Util {
     }
   }
 
-  public <A> A orElse(A value, A defaultValue) {
-    return value == null ? defaultValue : value;
+  public <A> A coalesce(A nullable, A ifNull) {
+    return nullable == null ? ifNull : nullable;
   }
 
   public <A, B> B applyNullable(A a, Function<A, B> fun) {
     return a == null ? null : fun.apply(a);
+  }
+
+  public <A> void applyNullable(A a, Consumer<A> fun) {
+    if (a != null) {
+      fun.accept(a);
+    }
   }
 
   public <A, B> B applyNullableOrDefault(A a, Function<A, B> fun,
@@ -208,6 +223,12 @@ public class Util {
     return (a == null || b == null) ? null : fun.apply(a, b);
   }
 
+  public <A, B> void applyNullable(A a, B b, BiConsumer<A, B> fun) {
+    if (a != null && b != null) {
+      fun.accept(a, b);
+    }
+  }
+
   public <A, B, C> C applyNullableOrDefault(A a, B b, BiFunction<A, B, C> fun,
     C defaultValue) {
     return (a == null || b == null) ? defaultValue : fun.apply(a, b);
@@ -215,6 +236,10 @@ public class Util {
 
   public Pair<Double, Double> rectToPolar(double x, double y) {
     return new Pair<>(Math.hypot(x, y), Math.atan2(y, x));
+  }
+
+  public Pair<Double, Double> rectToPolar(Pair<Double, Double> p) {
+    return Pairs.apply(p, Util::rectToPolar);
   }
 
   /**
@@ -225,28 +250,99 @@ public class Util {
    * @return Pair of x, y in rectangular form
    */
   public Pair<Double, Double> polarToRect(double r, double theta) {
-    return Pairs.thread(new Pair<>(Math.cos(theta), Math.sin(theta)),
-      x -> r * x);
+    return new Pair<>(r * Math.cos(theta), r * Math.sin(theta));
+  }
+
+  public Pair<Double, Double> polarToRect(Pair<Double, Double> p) {
+    return Pairs.apply(p, Util::polarToRect);
+  }
+
+  public double polarUp(double polarRight) {
+    return -(polarRight - Math.PI / 2);
+  }
+
+  public double polarRight(double polarUp) {
+    return -polarUp + Math.PI / 2;
   }
 
   public double normalizeRadians(double theta) {
-    return (theta + Math.PI) % (2 * Math.PI) - Math.PI;
+    return theta
+      - (2 * Math.PI) * Math.floor((theta + Math.PI) / (2 * Math.PI));
   }
 
   public double normalizeDegrees(double theta) {
-    return (theta + 180) % (360) - 180;
+    return theta - 360.0 * Math.floor((theta + 180.0) / 360.0);
+  }
+
+  public Location sanitize(Location loc, int numRows, int numCols) {
+    int row = loc.getRow();
+    int col = loc.getCol();
+    if (numRows != -1) {
+      row = Math.max(Math.min(row, numRows - 1), 0);
+    }
+    if (numCols != -1) {
+      col = Math.max(Math.min(col, numCols - 1), 0);
+    }
+    return new Location(row, col);
+  }
+
+  public Location sanitize(Location loc, Grid<?> grid) {
+    return sanitize(loc, grid.getNumRows(), grid.getNumCols());
   }
 
   public Pair<Integer, Integer> locToRectInt(Location loc) {
-    return new Pair<>(-loc.getRow(), loc.getCol());
+    return new Pair<>(loc.getCol(), -loc.getRow());
   }
 
   public Pair<Double, Double> locToRect(Location loc) {
-    return new Pair<>((double) -loc.getRow(), (double) loc.getCol());
+    return new Pair<>((double) loc.getCol(), (double) -loc.getRow());
   }
 
   public Location rectToLoc(Pair<Double, Double> rect) {
-    return new Location(-rect.getKey().intValue(),
-      (int) rect.getValue().intValue());
+    return new Location((int) Math.round(-rect.getValue()),
+      (int) Math.round(rect.getKey()));
+  }
+
+  public Pair<Double, Double> rectOffset(Pair<Double, Double> from,
+    Pair<Double, Double> to) {
+    return Util.Pairs.thread(to, from, (x, y) -> x - y);
+  }
+
+  public Shell genShell(ShellWorld world, AtomicReference<Integer> id,
+    ActorListener brain) {
+    return new Shell(id.getAndUpdate(x -> x + 1), brain, world.getWatchman());
+  }
+
+  public Stream<Shell> genShells(ShellWorld world, AtomicReference<Integer> id,
+    Stream<? extends ActorListener> brains) {
+    return brains.map(brain -> genShell(world, id, brain));
+  }
+
+  public Stream<Shell> genShells(ShellWorld world, AtomicReference<Integer> id,
+    Stream<? extends ActorListener> brains,
+    Map<Class<? extends Action>, BiConsumer<Shell, Action>> baseImpls) {
+    return brains
+      .map(brain -> genShell(world, id, brain).addAllImpls(baseImpls));
+  }
+
+  public Stream.Builder<Actor> addShells(Stream.Builder<Actor> actors,
+    ShellWorld world, AtomicReference<Integer> id,
+    Stream<? extends ActorListener> brains) {
+    genShells(world, id, brains).forEach(actors::add);
+    return actors;
+  }
+
+  public Stream.Builder<Actor> addShells(Stream.Builder<Actor> actors,
+    ShellWorld world, AtomicReference<Integer> id,
+    Stream<? extends ActorListener> brains,
+    Map<Class<? extends Action>, BiConsumer<Shell, Action>> baseImpls) {
+    brains.forEach(
+      brain -> actors.add(genShell(world, id, brain).addAllImpls(baseImpls)));
+    return actors;
+  }
+
+  public <T> void scatter(World<T> world, Stream<? extends T> things) {
+    things.forEach(t -> Optional.ofNullable(world.getRandomEmptyLocation())
+      .ifPresent(loc -> world.add(loc, t)));
   }
 }

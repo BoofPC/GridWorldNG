@@ -2,15 +2,11 @@ package info.gridworld.cashgrab;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import info.gridworld.actor.Actor;
-import info.gridworld.actor.ActorListener;
 import info.gridworld.actor.Shell;
-import info.gridworld.actor.ShellWorld;
-import info.gridworld.world.World;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -21,11 +17,11 @@ public class CashGrab {
   @Getter
   @RequiredArgsConstructor
   public enum Tags implements info.gridworld.actor.Tag {
-    MINABLE("CashGrab.Minable", null), IS_FEMALE("CashGrab.IsFemale",
-      true), PREDATOR("CashGrab.Predator", true);
+    BANK("CashGrab.Bank"), MINABLE("CashGrab.Minable"), IS_FEMALE(
+      "CashGrab.IsFemale"), PREDATOR("CashGrab.Predator");
     private final String tag;
-    private final Object initial;
   }
+  @Data
   public class Bank {
     private final Map<Integer, Integer> balances = new HashMap<>();
 
@@ -33,34 +29,41 @@ public class CashGrab {
       return balances.getOrDefault(id, 0);
     }
 
-    public Bank minable(Shell shell) {
-      shell.getTags().put(CashGrab.Tags.MINABLE.getTag(), this);
+    public Bank setBalance(int id, int balance) {
+      balances.put(id, balance);
+      return this;
+    }
+
+    public Bank bank(Shell shell) {
+      shell.tag(CashGrab.Tags.BANK, this);
+      return this;
+    }
+
+    public Bank transfer(Bank destBank, int src, int dest, int amount) {
+      val srcBalance = this.getBalance(src);
+      val destBalance = destBank.getBalance(dest);
+      this.setBalance(src, srcBalance - amount);
+      destBank.setBalance(dest, destBalance + amount);
+      System.out.println("transfer " + amount + " from " + src + " to " + dest);
       return this;
     }
 
     public Bank transfer(int src, int dest, int amount) {
-      val srcBalance = this.balances.getOrDefault(src, 0);
-      val destBalance = this.balances.getOrDefault(dest, 0);
-      this.balances.put(src, srcBalance - amount);
-      this.balances.put(dest, destBalance + amount);
-      return this;
+      return this.transfer(this, src, dest, amount);
     }
   }
 
-  public Shell genShell(ShellWorld world, AtomicReference<Integer> id,
-    ActorListener brain) {
-    return new Shell(id.getAndUpdate(x -> x + 1), brain, world.getWatchman());
+  public Coin genCoin(AtomicReference<Integer> id, Bank bank) {
+    return new Coin(id.getAndUpdate(x -> x + 1), bank);
   }
 
-  public Stream.Builder<Actor> addShells(Stream.Builder<Actor> actors,
-    ShellWorld world, AtomicReference<Integer> id,
-    Stream<ActorListener> brains) {
-    brains.forEach(brain -> actors.add(genShell(world, id, brain)));
-    return actors;
+  public Coin genCoin(AtomicReference<Integer> id, Bank bank, int initBalance) {
+    return new Coin(id.getAndUpdate(x -> x + 1), bank, initBalance);
   }
 
-  public <T> void scatter(World<T> world, Stream<T> things) {
-    things.forEach(t -> Optional.ofNullable(world.getRandomEmptyLocation())
-      .ifPresent(loc -> world.add(loc, t)));
+  public Stream.Builder<Coin> addCoins(Stream.Builder<Coin> coins,
+    AtomicReference<Integer> id, Stream<Bank> banks) {
+    banks.forEach(bank -> coins.add(genCoin(id, bank)));
+    return coins;
   }
 }

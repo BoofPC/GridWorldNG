@@ -21,8 +21,18 @@ public class ShellWorld extends ActorWorld {
 
     public Watchman(final @NonNull ShellWorld world) {
       this.world = world;
-      this.reportImpls.put(ReportEvents.CollisionReportEvent.class,
-        ReportEvents.CollisionReportEvent.impl());
+    }
+
+    public Watchman addImpl(Class<? extends ReportEvent> clazz,
+      BiConsumer<Watchman, ReportEvent> impl) {
+      reportImpls.put(clazz, impl);
+      return this;
+    }
+
+    public Watchman addAllImpls(
+      Map<Class<? extends ReportEvent>, BiConsumer<Watchman, ReportEvent>> impls) {
+      reportImpls.putAll(impls);
+      return this;
     }
 
     @Override
@@ -53,15 +63,16 @@ public class ShellWorld extends ActorWorld {
     val grid = this.getGrid();
     final List<Actor> actors = new ArrayList<>();
     for (val loc : grid.getOccupiedLocations()) {
-      actors.add(grid.get(loc));
+      val actor = grid.get(loc);
+      actors.add(actor);
+      if (actor instanceof Shell) {
+        ((Shell) actor)
+          .respond(new ActorEvents.StepEvent("I see what you did there"));
+      }
     }
     for (val actor : actors) {
       // only act if another actor hasn't removed actor
       if (actor.getGrid() == grid) {
-        if (actor instanceof Shell) {
-          ((Shell) actor)
-            .respond(new ActorEvents.StepEvent("I see what you did there"));
-        }
         actor.act();
       }
     }

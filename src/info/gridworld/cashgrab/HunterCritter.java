@@ -4,13 +4,12 @@ import java.awt.Color;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import info.gridworld.actor.Action;
 import info.gridworld.actor.Actions.ColorAction;
 import info.gridworld.actor.Actions.MessageAction;
-import info.gridworld.actor.Actions.MoveAction;
-import info.gridworld.actor.Actions.TurnAction;
 import info.gridworld.actor.ActorEvent;
 import info.gridworld.actor.ActorEvent.ActorInfo;
 import info.gridworld.actor.ActorEvents.MessageEvent;
@@ -18,6 +17,7 @@ import info.gridworld.actor.ActorEvents.StepEvent;
 import info.gridworld.actor.ActorListener;
 import info.gridworld.actor.Util;
 import info.gridworld.actor.Util.Either;
+import info.gridworld.actor.Util.Pairs;
 import info.gridworld.cashgrab.Actions.ConsumeAction;
 import javafx.util.Pair;
 import lombok.RequiredArgsConstructor;
@@ -91,12 +91,12 @@ public class HunterCritter implements ActorListener {
           actions.add(eatAction);
           break finalAction;
         }
-        if (Math.random() < 0.5) {
+        /*if (Math.random() < 0.5) {
           actions.add(new TurnAction(-1));
         } else {
           actions.add(new TurnAction(1));
         }
-        actions.add(new MoveAction(1));
+        actions.add(new MoveAction(1));*/
         break finalAction;
       }
     }
@@ -106,26 +106,31 @@ public class HunterCritter implements ActorListener {
   private Pair<Action, ActorInfo> court(Set<ActorInfo> environment) {
     val name = this.getClass().getName();
     val lover = environment.stream()
-      .filter(a -> Util.orElse(a.getType(), "").equals(name)).findAny()
+      .filter(a -> Util.coalesce(a.getType(), "").equals(name)).findAny()
       .orElse(null);
-    val loverLocation = Util.Pairs
-      .liftNull(new Pair<>(lover.getDistance(), lover.getDirection()));
-    return Util.Pairs.liftNull(new Pair<>(
-      Util.applyNullable(loverLocation,
-        p -> new MessageAction(Either.right(Either.right(p)), "hey baby")),
-      lover));
+    if (lover == null) {
+      return null;
+    }
+    val loverLocation =
+      Pairs.liftNull(lover.getDistance(), lover.getDirection());
+    final Function<Pair<Double, Double>, MessageAction> messageFun =
+      p -> new MessageAction(Either.right(Either.right(p)), "hey baby");
+    return Pairs.liftNull(Util.applyNullable(loverLocation, messageFun), lover);
   }
 
   private Action eatPrey(Set<ActorInfo> environment) {
     val name = this.getClass().getName();
     val prey = environment.stream()
-      .filter(a -> !Util.orElse(a.getType(), "").equals(name))
+      .filter(a -> !Util.coalesce(a.getType(), "").equals(name))
       .sorted((a1, a2) -> Double.compare(
-        Util.orElse(a1.getDistance(), Double.MAX_VALUE),
-        Util.orElse(a2.getDistance(), Double.MAX_VALUE)))
+        Util.coalesce(a1.getDistance(), Double.MAX_VALUE),
+        Util.coalesce(a2.getDistance(), Double.MAX_VALUE)))
       .findFirst().orElse(null);
-    return Util.Pairs.applyNullable(
-      Util.Pairs.liftNull(new Pair<>(prey.getDistance(), prey.getDirection())),
+    if (prey == null) {
+      return null;
+    }
+    return Pairs.applyNullable(
+      Pairs.liftNull(prey.getDistance(), prey.getDirection()),
       ConsumeAction::new);
   }
 }

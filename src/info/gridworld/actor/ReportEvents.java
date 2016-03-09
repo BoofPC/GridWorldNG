@@ -38,26 +38,26 @@ public class ReportEvents {
           return;
         }
         val collidedWith = (Shell) collidedWith_;
-        if ((boolean) collidedWith.getTagOrDefault(Tags.PUSHABLE, false)) {
-          final int direction = r.getDirection();
-          final Actor collider = r.getCollider();
-          val grid = collider.getGrid();
-          val destLoc = collidedWith.getLocation();
-          val pushLoc =
-            Actions.MoveAction.sanitize(destLoc.getAdjacentLocation(direction),
-              grid.getNumRows() - 1, grid.getNumCols() - 1);
-          if (destLoc.equals(pushLoc)) {
-            return;
-          }
-          val displaced = grid.get(pushLoc);
-          if (displaced != null) {
-            that.report(new CollisionReportEvent(that, collidedWith, displaced,
-              direction));
-            return;
-          }
-          collidedWith.moveTo(pushLoc);
-          collider.moveTo(destLoc);
+        if (!(boolean) collidedWith.getTagOrDefault(Tags.PUSHABLE, false)) {
+          return;
         }
+        final int direction = r.getDirection();
+        final Actor collider = r.getCollider();
+        val grid = collider.getGrid();
+        val destLoc = collidedWith.getLocation();
+        val pushLoc =
+          Util.sanitize(destLoc.getAdjacentLocation(direction), grid);
+        if (destLoc.equals(pushLoc)) {
+          return;
+        }
+        val displaced = grid.get(pushLoc);
+        if (displaced != null) {
+          that.report(
+            new CollisionReportEvent(that, collidedWith, displaced, direction));
+          return;
+        }
+        collidedWith.moveTo(pushLoc);
+        collider.moveTo(destLoc);
       };
     }
   }

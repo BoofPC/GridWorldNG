@@ -43,6 +43,18 @@ public class Shell extends Actor {
     this.actionImpls.put(ColorAction.class, ColorAction.impl());
   }
 
+  public Shell addImpl(Class<? extends Action> clazz,
+    BiConsumer<Shell, Action> impl) {
+    actionImpls.put(clazz, impl);
+    return this;
+  }
+
+  public Shell addAllImpls(
+    Map<Class<? extends Action>, BiConsumer<Shell, Action>> impls) {
+    actionImpls.putAll(impls);
+    return this;
+  }
+
   public Shell tag(String tag) {
     this.tag(tag, null);
     return this;
@@ -80,20 +92,30 @@ public class Shell extends Actor {
   }
 
   public void respond(final ActorEvent event) {
-    val that = ActorInfo.builder().id(this.id).distance(0.0)
+    val that = ActorInfo.builder().id(this.id).distance(0.0).direction(0.0)
       .color(this.getColor()).build();
     final Set<ActorInfo> environment = new HashSet<>();
+    val myDirection = this.getDirection();
     val myLoc = this.getLocation();
     val myLocRect = Util.locToRect(myLoc);
-    final int sightRadius = 3;
+    final double sightRadius = 3;
     Util.actorsInRadius(this, sightRadius).forEach(actor -> {
-      val actorInfo = ActorInfo.builder().type(actor.getClass().getName());
+      Class<?> actorType_;
+      if (actor instanceof Shell) {
+        actorType_ = ((Shell) actor).getBrain().getClass();
+      } else {
+        actorType_ = actor.getClass();
+      }
+      val actorType = actorType_;
+      val actorInfo = ActorInfo.builder().type(actorType.getName());
       val actorLoc = actor.getLocation();
       val actorLocRect = Util.locToRect(actorLoc);
-      val offset = Util.Pairs.thread(myLocRect, actorLocRect, (x, y) -> x - y);
-      val offsetPolar = Util.Pairs.apply(offset, Util::rectToPolar);
-      actorInfo.distance(offsetPolar.getKey()).direction(Util.normalizeDegrees(
-        actor.getDirection() + Math.toDegrees(offsetPolar.getValue())));
+      val offset = Util.rectOffset(myLocRect, actorLocRect);
+      val offsetPolar = Util.rectToPolar(offset);
+      val offsetDirection =
+        Math.toDegrees(Util.polarUp(offsetPolar.getValue()));
+      actorInfo.distance(offsetPolar.getKey())
+        .direction(Util.normalizeDegrees(offsetDirection - myDirection));
       actorInfo.color(actor.getColor());
       environment.add(actorInfo.build());
     });
